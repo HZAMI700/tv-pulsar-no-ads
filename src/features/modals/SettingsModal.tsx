@@ -149,7 +149,7 @@ export const SettingsModal: React.FC = () => {
         {/* Footer / Version */}
         <div className="text-center pt-2 border-t border-white/8">
           <span className="text-[11px] font-mono text-white/40">
-            TVPulsar v1.0.4 • TOD 2.0 Edition
+            TVPulsar v2.0.0 • Pro Edition
           </span>
         </div>
       </div>
