@@ -10,6 +10,7 @@ import { UniversalPlayer } from './features/player/UniversalPlayer';
 import { SearchModal } from './features/modals/SearchModal';
 import { TelegramModal } from './features/modals/TelegramModal';
 import { SettingsModal } from './features/modals/SettingsModal';
+import { ErrorBoundary } from './design-system/components/ErrorBoundary';
 
 export const App: React.FC = () => {
   const {
@@ -97,16 +98,23 @@ export const App: React.FC = () => {
     }
   }, [hasPromptedTelegram, setIsTelegramModalOpen]);
 
+  // Always reset scroll to the very top whenever the navigation tab changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+  }, [currentTab]);
+
   return (
     <AppShell>
-      {/* Tab Switcher with Unified Motion System */}
-      <div key={currentTab} className="motion-page min-h-[calc(100vh-130px)]">
-        {currentTab === 'home' && <HomePage />}
-        {currentTab === 'sports' && <SportsPage />}
-        {currentTab === 'channels' && <ChannelsPage />}
-        {currentTab === 'movies' && <DiscoverPage />}
-        {currentTab === 'favorites' && <FavoritesPage />}
-      </div>
+      {/* Tab Switcher with Unified Motion System & Error Resilience */}
+      <ErrorBoundary fallbackTitle="حدث خطأ في تحميل الصفحة">
+        <div key={currentTab} className="motion-page min-h-[calc(100vh-130px)]">
+          {currentTab === 'home' && <HomePage />}
+          {currentTab === 'sports' && <SportsPage />}
+          {currentTab === 'channels' && <ChannelsPage />}
+          {currentTab === 'movies' && <DiscoverPage />}
+          {currentTab === 'favorites' && <FavoritesPage />}
+        </div>
+      </ErrorBoundary>
 
       {/* Universal Player Overlay (HLS + VidLink + StreamFree) */}
       {activeMedia && (

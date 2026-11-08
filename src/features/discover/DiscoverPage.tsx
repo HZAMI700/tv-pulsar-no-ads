@@ -398,10 +398,15 @@ export const DiscoverPage: React.FC = () => {
     return items;
   }, [searchResults, searchTypeFilter, items]);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+  }, []);
+
   // Filter watch history strictly to movies and TV series only
   const movieSeriesHistory = useMemo(() => {
     return (watchHistory || []).filter(
-      (item) => item && (item.type === 'movie' || item.type === 'tv')
+      (item) => item && item.id && (item.type === 'movie' || item.type === 'tv')
     );
   }, [watchHistory]);
 

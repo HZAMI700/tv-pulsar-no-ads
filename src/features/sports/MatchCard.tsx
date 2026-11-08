@@ -15,11 +15,20 @@ interface MatchCardProps {
 export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className = '' }) => {
   const timeInfo = formatMatchTime(match.matchTimestamp);
   const [thumbError, setThumbError] = useState(false);
+  const [badgeError, setBadgeError] = useState(false);
 
-  const hasTwoTeams = Boolean(
+  const isIndividualEvent =
+    match.category === 'combat' ||
+    match.category === 'racing' ||
+    match.category === 'tennis' ||
+    match.category === 'cricket' ||
+    (!match.team1?.logo && !match.team2?.logo);
+
+  const hasTwoTeams = !isIndividualEvent && Boolean(
     match.team1?.name &&
     match.team2?.name &&
-    match.team2.name.trim().length > 0
+    match.team2.name.trim().length > 0 &&
+    (match.team1?.logo || match.team2?.logo)
   );
 
   const colorLeft = getTeamColor(match.team1?.name, false);
@@ -43,14 +52,17 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className =
       style={{
         scrollSnapAlign: 'start',
         flexShrink: 0,
+        ...(className.includes('w-full')
+          ? {}
+          : { width: '260px', minWidth: '240px', maxWidth: '300px' }),
       }}
     >
       {/* 1. Main 16:9 Banner Card (Matching Screenshot 2 benchmark) */}
       <div className="relative w-full aspect-[16/9.5] rounded-2xl overflow-hidden bg-[#0c0d15] border border-white/10 group-hover:border-white/30 transition-all duration-300 group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.85)] group-hover:-translate-y-1 active:scale-97">
         {hasTwoTeams ? (
-          /* Split Team Gradient Background with Team Crests & Center League Badge */
-          <div className="absolute inset-0 flex">
-            {/* Left Team Half */}
+          /* Split Team Gradient Background with Team Crests & Center League Badge (Strictly LTR: Team 1 Left, Team 2 Right) */
+          <div className="absolute inset-0 flex" dir="ltr">
+            {/* Left Team Half (Team 1) */}
             <div
               className="w-1/2 h-full flex items-center justify-center p-2.5 sm:p-4 relative"
               style={{
@@ -76,7 +88,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className =
               )}
             </div>
 
-            {/* Right Team Half */}
+            {/* Right Team Half (Team 2) */}
             <div
               className="w-1/2 h-full flex items-center justify-center p-2.5 sm:p-4 relative"
               style={{
@@ -104,16 +116,17 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className =
 
             {/* Center Official League Badge or VS Pill */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              {leagueBadge ? (
+              {leagueBadge && !badgeError ? (
                 <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-black/60 p-1 backdrop-blur-md border border-white/15 flex items-center justify-center shadow-lg">
                   <img
                     src={leagueBadge}
                     alt={match.league}
+                    onError={() => setBadgeError(true)}
                     className="w-full h-full object-contain filter drop-shadow"
                   />
                 </div>
               ) : (
-                <div className="px-1.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[8px] sm:text-[9px] font-black text-white/70 font-mono shadow-lg">
+                <div className="px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-[8px] sm:text-[9px] font-black text-white/80 font-mono shadow-lg">
                   VS
                 </div>
               )}
@@ -163,7 +176,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className =
       </div>
 
       {/* 2. Metadata Below Banner (Matching Screenshot 2 benchmark) */}
-      <div className="mt-1.5 sm:mt-2 space-y-0.5 px-0.5 text-right" dir="ltr">
+      <div className="mt-1.5 sm:mt-2 space-y-0.5 px-0.5 text-left" dir="ltr">
         <h3
           className="text-xs sm:text-sm font-bold text-white group-hover:text-[#FF1838] transition-colors truncate tracking-tight"
           title={match.name}
