@@ -65,9 +65,9 @@ export const vidApiService = {
       episodes.push({
         episodeNumber: i,
         seasonNumber,
-        title: `الحلقة ${i}`,
-        duration: '45 دقيقة',
-        overview: `أحداث مشوقة ومثيرة من الموسم ${seasonNumber} الحلقة ${i}.`,
+        title: `Episode ${i}`,
+        duration: '45 min',
+        overview: `Thrilling developments from Season ${seasonNumber} Episode ${i}.`,
       });
     }
     return episodes;

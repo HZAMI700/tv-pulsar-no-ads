@@ -39,8 +39,8 @@ export const SettingsModal: React.FC = () => {
               <Settings className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white">إعدادات التطبيق</h2>
-              <p className="text-[11px] text-white/50">تخصيص المشغل وتجربة المشاهدة</p>
+              <h2 className="text-base font-bold text-white">App Settings</h2>
+              <p className="text-[11px] text-white/50">Player and viewing customization</p>
             </div>
           </div>
 
@@ -60,25 +60,14 @@ export const SettingsModal: React.FC = () => {
               <div className="flex items-center gap-1.5">
                 <Globe className="w-3.5 h-3.5 text-[#00F2FE]" />
                 <span className="text-xs font-bold text-white">
-                  {language === 'ar' ? 'لغة التطبيق' : 'App Language'}
+                  App Language
                 </span>
               </div>
               <span className="text-[10px] text-white/50 block">
-                {language === 'ar' ? 'تغيير اتجاه ولغة الواجهة' : 'Change interface language & layout'}
+                Change interface language & layout
               </span>
             </div>
             <div className="flex items-center gap-1 p-1 rounded-xl bg-black/40 border border-white/10">
-              <button
-                type="button"
-                onClick={() => setLanguage('ar')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  language === 'ar'
-                    ? 'bg-[#FF1838] text-white shadow-md'
-                    : 'text-white/60 hover:text-white'
-                }`}
-              >
-                العربية
-              </button>
               <button
                 type="button"
                 onClick={() => setLanguage('en')}
@@ -90,14 +79,25 @@ export const SettingsModal: React.FC = () => {
               >
                 English
               </button>
+              <button
+                type="button"
+                onClick={() => setLanguage('ar')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  language === 'ar'
+                    ? 'bg-[#FF1838] text-white shadow-md'
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                العربية
+              </button>
             </div>
           </div>
 
           {/* No Spoiler Mode */}
           <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/8">
             <div className="space-y-0.5">
-              <span className="text-xs font-bold text-white block">حجب نتائج المباريات (No-Spoiler)</span>
-              <span className="text-[10px] text-white/50 block">إخفاء الأهداف والنتائج المباشرة حتى لا تحرق عليك الإثارة</span>
+              <span className="text-xs font-bold text-white block">Hide Match Scores (No-Spoiler)</span>
+              <span className="text-[10px] text-white/50 block">Hide live scores and spoilers for maximum excitement</span>
             </div>
             <SpoilerToggle active={noSpoilerMode} onChange={toggleNoSpoiler} />
           </div>
@@ -107,12 +107,12 @@ export const SettingsModal: React.FC = () => {
             <div className="space-y-0.5">
               <div className="flex items-center gap-1.5">
                 <Zap className="w-3.5 h-3.5 text-[#00E676]" />
-                <span className="text-xs font-bold text-white">تسريع البث (LL-HLS)</span>
+                <span className="text-xs font-bold text-white">Stream Acceleration (LL-HLS)</span>
               </div>
-              <span className="text-[10px] text-white/50 block">مفعل افتراضياً للحد الأدنى من تأخير البث المباشر</span>
+              <span className="text-[10px] text-white/50 block">Enabled by default for minimum live broadcast latency</span>
             </div>
             <span className="text-[10px] font-bold text-[#00E676] px-2 py-0.5 rounded bg-[#00E676]/10 border border-[#00E676]/30">
-              نشط
+              Active
             </span>
           </div>
 
@@ -126,12 +126,12 @@ export const SettingsModal: React.FC = () => {
           >
             <div className="flex items-center gap-2.5">
               <Send className="w-4 h-4 text-[#00F2FE]" />
-              <div className="text-right">
-                <span className="text-xs font-bold block">قناة تيليجرام الرسمية</span>
+              <div className="text-left">
+                <span className="text-xs font-bold block">Official Telegram Channel</span>
                 <span className="text-[10px] text-white/60 block">@blackroner</span>
               </div>
             </div>
-            <span className="text-xs text-[#00F2FE] font-bold">انضمام &larr;</span>
+            <span className="text-xs text-[#00F2FE] font-bold">Join &rarr;</span>
           </button>
 
           {/* Clear Cache */}
@@ -141,7 +141,7 @@ export const SettingsModal: React.FC = () => {
           >
             <div className="flex items-center gap-2.5">
               <RefreshCw className="w-4 h-4 text-white/50" />
-              <span className="text-xs font-semibold">إعادة تعيين ومسح الذاكرة المؤقتة</span>
+              <span className="text-xs font-semibold">Clear Cache & Reset Data</span>
             </div>
           </button>
         </div>

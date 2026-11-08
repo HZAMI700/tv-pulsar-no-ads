@@ -26,7 +26,7 @@ export const SpoilerToggle: React.FC<SpoilerToggleProps> = ({ active, onChange, 
       ) : (
         <ShieldAlert className="w-3.5 h-3.5 text-white/40" />
       )}
-      <span>{active ? 'حجب النتائج مفعل' : 'وضع حجب النتائج'}</span>
+      <span>{active ? 'No-Spoiler Active' : 'No-Spoiler Mode'}</span>
       
       {/* UIverse Switch track */}
       <span

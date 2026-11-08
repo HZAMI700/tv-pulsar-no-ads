@@ -27,7 +27,7 @@ export const Header: React.FC = () => {
             onClick={() => setIsSearchOpen(true)}
             className="flex items-center justify-between w-full h-10 px-3.5 rounded-2xl bg-[#12131D] border border-white/10 hover:border-white/20 text-white/50 hover:text-white transition-all cursor-pointer shadow-inner active:scale-98"
           >
-            <span className="text-xs truncate">.. ابحث عن مباراة أو قناة</span>
+            <span className="text-xs truncate">Search matches, channels, movies...</span>
             <Search className="w-4 h-4 text-white/50 shrink-0" />
           </button>
         </div>
@@ -35,7 +35,7 @@ export const Header: React.FC = () => {
         <div className="flex-1" />
       )}
 
-      {/* Left side in RTL: Telegram Glow Button + Settings Squircle */}
+      {/* Actions: Telegram Glow Button + Settings Squircle */}
       <div className="flex items-center gap-2">
         {/* Telegram Channel Button with vivid cyan glow */}
         <a
@@ -43,7 +43,7 @@ export const Header: React.FC = () => {
           target="_blank"
           rel="noopener noreferrer"
           className="w-10 h-10 rounded-2xl bg-blue-600/20 border border-blue-500/40 text-[#00F2FE] hover:bg-blue-600/30 hover:text-white transition-all duration-200 cursor-pointer flex items-center justify-center shadow-[0_0_15px_rgba(0,180,255,0.4)]"
-          title="قناتنا على تيليجرام @blackroner"
+          title="Join Telegram @blackroner"
         >
           <Send className="w-4 h-4 text-[#00F2FE]" />
         </a>

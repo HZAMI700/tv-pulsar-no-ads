@@ -32,17 +32,17 @@ export class ErrorBoundary extends Component<Props, State> {
             <AlertCircle className="w-6 h-6 text-[#FF1838]" />
           </div>
           <h2 className="text-base sm:text-lg font-bold mb-1">
-            {this.props.fallbackTitle || 'حدث خطأ غير متوقع'}
+            {this.props.fallbackTitle || 'An unexpected error occurred'}
           </h2>
           <p className="text-xs text-white/50 max-w-sm mb-4">
-            يرجى إعادة المحاولة أو الانتقال إلى قسم آخر.
+            Please try again or navigate to another section.
           </p>
           <button
             onClick={() => this.setState({ hasError: false })}
             className="px-4 py-2 rounded-xl bg-[#FF1838] hover:bg-[#ff3350] text-white font-bold text-xs flex items-center gap-2 shadow-lg transition-all active:scale-95 cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>إعادة المحاولة</span>
+            <span>Try Again</span>
           </button>
         </div>
       );

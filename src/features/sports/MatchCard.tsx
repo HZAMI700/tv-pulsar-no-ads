@@ -12,10 +12,22 @@ interface MatchCardProps {
   className?: string;
 }
 
+function getInitials(name?: string): string {
+  if (!name) return 'VS';
+  const clean = name.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+  const words = clean.split(/\s+/).filter(Boolean);
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+  return clean.slice(0, 3).toUpperCase();
+}
+
 export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className = '' }) => {
   const timeInfo = formatMatchTime(match.matchTimestamp);
   const [thumbError, setThumbError] = useState(false);
   const [badgeError, setBadgeError] = useState(false);
+  const [team1Error, setTeam1Error] = useState(false);
+  const [team2Error, setTeam2Error] = useState(false);
 
   const isIndividualEvent =
     match.category === 'combat' ||
@@ -27,8 +39,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className =
   const hasTwoTeams = !isIndividualEvent && Boolean(
     match.team1?.name &&
     match.team2?.name &&
-    match.team2.name.trim().length > 0 &&
-    (match.team1?.logo || match.team2?.logo)
+    match.team2.name.trim().length > 0
   );
 
   const colorLeft = getTeamColor(match.team1?.name, false);
@@ -69,21 +80,17 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className =
                 background: `radial-gradient(circle at 35% 50%, ${colorLeft} 0%, #06070d 100%)`,
               }}
             >
-              {match.team1?.logo ? (
+              {match.team1?.logo && !team1Error ? (
                 <img
                   src={match.team1.logo}
                   alt={match.team1.name}
                   loading="lazy"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      match.team1?.name || 'T1'
-                    )}&background=141628&color=fff&size=96`;
-                  }}
+                  onError={() => setTeam1Error(true)}
                   className="w-10 h-10 sm:w-14 sm:h-14 object-contain filter drop-shadow-[0_6px_14px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 flex items-center justify-center text-xs font-black text-white/80">
-                  {match.team1?.name?.slice(0, 3)}
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-center text-xs sm:text-sm font-black text-white/90 shadow-md">
+                  {getInitials(match.team1?.name)}
                 </div>
               )}
             </div>
@@ -95,21 +102,17 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className =
                 background: `radial-gradient(circle at 65% 50%, ${colorRight} 0%, #06070d 100%)`,
               }}
             >
-              {match.team2?.logo ? (
+              {match.team2?.logo && !team2Error ? (
                 <img
                   src={match.team2.logo}
                   alt={match.team2.name}
                   loading="lazy"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      match.team2?.name || 'T2'
-                    )}&background=141628&color=fff&size=96`;
-                  }}
+                  onError={() => setTeam2Error(true)}
                   className="w-10 h-10 sm:w-14 sm:h-14 object-contain filter drop-shadow-[0_6px_14px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 flex items-center justify-center text-xs font-black text-white/80">
-                  {match.team2?.name?.slice(0, 3)}
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-center text-xs sm:text-sm font-black text-white/90 shadow-md">
+                  {getInitials(match.team2?.name)}
                 </div>
               )}
             </div>

@@ -10,12 +10,12 @@ import { SeriesDetailModal } from '../discover/SeriesDetailModal';
 
 const QUICK_TAGS = [
   'beIN SPORTS',
-  'ريال مدريد',
-  'برشلونة',
-  'الدوري الإنجليزي',
-  'دوري روشن',
-  'أفلام 2026',
-  'مسلسلات',
+  'Real Madrid',
+  'Barcelona',
+  'Premier League',
+  'Champions League',
+  'Movies 2026',
+  'TV Series',
   'Sky Sports',
 ];
 
@@ -125,7 +125,7 @@ export const SearchModal: React.FC = () => {
     setActiveMedia({
       id: c.id,
       title: c.name,
-      subtitle: c.program || `${c.category} • بث مباشر عالي الدقة`,
+      subtitle: c.program || `${c.category} • HD Live Stream`,
       type: 'channel',
       streamUrl: c.src,
       poster: c.resolvedLogo,
@@ -138,7 +138,7 @@ export const SearchModal: React.FC = () => {
     setActiveMedia({
       id: m.id,
       title: m.name,
-      subtitle: `${m.league} • بث مباشر`,
+      subtitle: `${m.league} • Live Stream`,
       type: 'match',
       streamUrl: m.playableUrl,
       poster: m.thumbnailUrl,
@@ -165,7 +165,7 @@ export const SearchModal: React.FC = () => {
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="ابحث عن مباراة، نادي، قناة، فيلم أو مسلسل..."
+            placeholder="Search matches, clubs, channels, movies or series..."
             className="flex-1 bg-transparent text-sm text-white placeholder-white/40 focus:outline-none"
           />
           {query && (
@@ -180,7 +180,7 @@ export const SearchModal: React.FC = () => {
             onClick={() => setIsSearchOpen(false)}
             className="text-xs text-white/50 hover:text-white px-2 py-1 cursor-pointer"
           >
-            إغلاق
+            Close
           </button>
         </div>
 
@@ -189,7 +189,7 @@ export const SearchModal: React.FC = () => {
           <div className="p-4 space-y-3 bg-[#0A0C14]">
             <div className="flex items-center gap-1.5 text-xs text-white/60">
               <TrendingUp className="w-4 h-4 text-[#FF1838]" />
-              <span>عمليات البحث الشائعة:</span>
+              <span>Trending Searches:</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {QUICK_TAGS.map((tag) => (
@@ -209,11 +209,11 @@ export const SearchModal: React.FC = () => {
         {cleanQuery && (
           <div className="flex items-center gap-1.5 px-4 py-2 bg-[#0A0C14] border-b border-white/5 overflow-x-auto scrollbar-none text-xs">
             {[
-              { id: 'all', label: `الكل (${totalResultsCount})` },
-              { id: 'matches', label: `المباريات (${filteredMatches.length})` },
-              { id: 'channels', label: `القنوات (${filteredChannels.length})` },
-              { id: 'movies', label: `الأفلام (${filteredMovies.length})` },
-              { id: 'tv', label: `المسلسلات (${filteredTvShows.length})` },
+              { id: 'all', label: `All (${totalResultsCount})` },
+              { id: 'matches', label: `Matches (${filteredMatches.length})` },
+              { id: 'channels', label: `Channels (${filteredChannels.length})` },
+              { id: 'movies', label: `Movies (${filteredMovies.length})` },
+              { id: 'tv', label: `Series (${filteredTvShows.length})` },
             ].map((f) => (
               <button
                 key={f.id}
@@ -235,8 +235,8 @@ export const SearchModal: React.FC = () => {
           {cleanQuery && totalResultsCount === 0 && (
             <div className="p-12 text-center text-white/50 space-y-2">
               <Search className="w-10 h-10 mx-auto text-white/20" />
-              <p className="text-xs">لم يتم العثور على نتائج مطابقة لـ "{query}"</p>
-              <p className="text-[11px] text-white/30">تأكد من كتابة الكلمات بشكل صحيح أو جرب كلمة بحث أخرى.</p>
+              <p className="text-xs">No matching results found for "{query}"</p>
+              <p className="text-[11px] text-white/30">Check your spelling or try another keyword.</p>
             </div>
           )}
 
@@ -245,7 +245,7 @@ export const SearchModal: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-bold text-white/70">
                 <Trophy className="w-3.5 h-3.5 text-[#FF1838]" />
-                <span>المباريات المباشرة:</span>
+                <span>Live Matches:</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {filteredMatches.map((m) => (
@@ -266,7 +266,7 @@ export const SearchModal: React.FC = () => {
                       </div>
                     </div>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#00E676]/20 text-[#00E676] shrink-0">
-                      مباشر
+                      LIVE
                     </span>
                   </div>
                 ))}
@@ -279,7 +279,7 @@ export const SearchModal: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-bold text-white/70">
                 <Tv className="w-3.5 h-3.5 text-[#00F2FE]" />
-                <span>القنوات التلفزيونية:</span>
+                <span>TV Channels:</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {filteredChannels.map((c) => (
@@ -301,7 +301,7 @@ export const SearchModal: React.FC = () => {
                         </span>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold text-[#00F2FE]">تشغيل ▶</span>
+                    <span className="text-[10px] font-bold text-[#00F2FE]">Play ▶</span>
                   </div>
                 ))}
               </div>
@@ -313,7 +313,7 @@ export const SearchModal: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-bold text-white/70">
                 <Film className="w-3.5 h-3.5 text-purple-400" />
-                <span>الأفلام السينمائية:</span>
+                <span>Movies:</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                 {filteredMovies.map((m) => (
@@ -331,7 +331,7 @@ export const SearchModal: React.FC = () => {
                       <h4 className="text-xs font-bold truncate group-hover:text-purple-400">
                         {m.title}
                       </h4>
-                      <p className="text-[10px] text-white/50">{m.year} • {m.genre || 'فيلم'}</p>
+                      <p className="text-[10px] text-white/50">{m.year} • {m.genre || 'Movie'}</p>
                       <span className="text-[10px] text-yellow-400 font-bold">★ {m.rating || '6.0'}</span>
                     </div>
                   </div>
@@ -345,7 +345,7 @@ export const SearchModal: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-bold text-white/70">
                 <Tv className="w-3.5 h-3.5 text-emerald-400" />
-                <span>المسلسلات التلفزيونية:</span>
+                <span>TV Series:</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                 {filteredTvShows.map((t) => (
@@ -363,7 +363,7 @@ export const SearchModal: React.FC = () => {
                       <h4 className="text-xs font-bold truncate group-hover:text-emerald-400">
                         {t.title}
                       </h4>
-                      <p className="text-[10px] text-white/50">{t.year} • {t.genre || 'مسلسل'}</p>
+                      <p className="text-[10px] text-white/50">{t.year} • {t.genre || 'Series'}</p>
                       <span className="text-[10px] text-yellow-400 font-bold">★ {t.rating || '7.5'}</span>
                     </div>
                   </div>

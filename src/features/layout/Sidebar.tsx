@@ -8,11 +8,11 @@ export const Sidebar: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const navItems: Array<{ tab: NavigationTab; label: string; icon: React.ReactNode }> = [
-    { tab: 'home', label: 'الرئيسية', icon: <Home className="w-5 h-5" /> },
-    { tab: 'sports', label: 'المباريات مباشر', icon: <Trophy className="w-5 h-5" /> },
-    { tab: 'channels', label: 'القنوات الحية', icon: <Tv className="w-5 h-5" /> },
-    { tab: 'movies', label: 'الأفلام والمسلسلات', icon: <Film className="w-5 h-5" /> },
-    { tab: 'favorites', label: 'قائمتي', icon: <Bookmark className="w-5 h-5" /> },
+    { tab: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
+    { tab: 'sports', label: 'Live Matches', icon: <Trophy className="w-5 h-5" /> },
+    { tab: 'channels', label: 'Live Channels', icon: <Tv className="w-5 h-5" /> },
+    { tab: 'movies', label: 'Movies & TV', icon: <Film className="w-5 h-5" /> },
+    { tab: 'favorites', label: 'My List', icon: <Bookmark className="w-5 h-5" /> },
   ];
 
   return (
@@ -78,12 +78,12 @@ export const Sidebar: React.FC = () => {
           target="_blank"
           rel="noopener noreferrer"
           className="group relative flex items-center w-full gap-4 px-3.5 py-2.5 rounded-xl font-medium text-[#00F2FE]/80 hover:text-white hover:bg-[#00F2FE]/10 transition-colors"
-          title="قناة تيليجرام الرسمية"
+          title="Official Telegram Channel"
         >
           <Send className="w-5 h-5 shrink-0 text-[#00F2FE] group-hover:scale-110 transition-transform" />
           {isExpanded && (
-            <div className="truncate text-right">
-              <span className="text-xs font-bold block text-white">قناة تيليجرام</span>
+            <div className="truncate text-left">
+              <span className="text-xs font-bold block text-white">Telegram Channel</span>
               <span className="text-[10px] text-white/50 block">@blackroner</span>
             </div>
           )}
@@ -95,7 +95,7 @@ export const Sidebar: React.FC = () => {
           className="group relative flex items-center w-full gap-4 px-3.5 py-2.5 rounded-xl font-medium text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
         >
           <Settings className="w-5 h-5 shrink-0 group-hover:rotate-45 transition-transform" />
-          {isExpanded && <span className="truncate text-xs font-medium">الإعدادات</span>}
+          {isExpanded && <span className="truncate text-xs font-medium">Settings</span>}
         </button>
       </div>
     </aside>

@@ -125,7 +125,7 @@ export const HomePage: React.FC = () => {
     setActiveMedia({
       id: m.id,
       title: m.name,
-      subtitle: `${m.league} • بث مباشر`,
+      subtitle: `${m.league} • Live Broadcast`,
       type: 'match',
       streamUrl: m.playableUrl,
       poster: m.thumbnailUrl,
@@ -137,7 +137,7 @@ export const HomePage: React.FC = () => {
     setActiveMedia({
       id: c.id,
       title: c.name,
-      subtitle: c.program || `${c.category} • بث مباشر عالي الدقة`,
+      subtitle: c.program || `${c.category} • HD Live Feed`,
       type: 'channel',
       streamUrl: c.src,
       poster: c.resolvedLogo,
@@ -164,7 +164,7 @@ export const HomePage: React.FC = () => {
     ? {
         id: matches[0].id,
         title: matches[0].name,
-        subtitle: `${matches[0].league} • بث مباشر بدقة FHD 1080p`,
+        subtitle: `${matches[0].league} • Live in FHD 1080p`,
         type: 'match',
         streamUrl: matches[0].playableUrl,
         poster:
@@ -175,7 +175,7 @@ export const HomePage: React.FC = () => {
     : {
         id: 'default-hero',
         title: 'beIN SPORTS 1 HD',
-        subtitle: 'استوديو تحليلي وبث مباشر لأقوى المباريات العالمية',
+        subtitle: 'Live studio analysis and worldwide football coverage',
         type: 'channel',
         streamUrl: 'https://wideiptv.top/player/beINAR',
         poster: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1920&q=80',
@@ -189,14 +189,14 @@ export const HomePage: React.FC = () => {
         <HeroBanner item={heroFeatured} onPlay={setActiveMedia} />
       </div>
 
-      {/* Rail 1: beIN SPORTS Network (Top of screen on Mobile matching Right Screenshot) */}
+      {/* Rail 1: beIN SPORTS Network */}
       {isLoading ? (
         <ShimmerRail aspect="16/9" />
       ) : beinChannels.length > 0 ? (
         <ContentRail
-          title="باقة beIN SPORTS"
-          subtitle="تغطية حصرية بالتعليق العربي بتقنية Full HD"
-          actionText="عرض كل القنوات"
+          title="beIN SPORTS Network"
+          subtitle="Exclusive live sports coverage in Full HD"
+          actionText="View All Channels"
           onAction={() => setCurrentTab('channels')}
         >
           {beinChannels.map((channel) => (
@@ -205,14 +205,14 @@ export const HomePage: React.FC = () => {
         </ContentRail>
       ) : null}
 
-      {/* Rail 2: Trending Global Movies (Directly below beIN Sports matching Right Screenshot) */}
+      {/* Rail 2: Trending Global Movies */}
       {isLoading ? (
         <ShimmerRail aspect="2/3" />
       ) : movies.length > 0 ? (
         <ContentRail
-          title="أحدث الأفلام العالمية"
-          subtitle="مكتبة ضخمة بجودة 1080p مع الترجمة الاحترافية"
-          actionText="تصفح المزيد"
+          title="Trending Global Movies"
+          subtitle="Huge library in 1080p quality with subtitle options"
+          actionText="Browse Movies"
           onAction={() => setCurrentTab('movies')}
         >
           {movies.map((movie) => (
@@ -226,9 +226,9 @@ export const HomePage: React.FC = () => {
         <ShimmerRail aspect="16/9" />
       ) : matches.length > 0 ? (
         <ContentRail
-          title="مباريات اليوم المباشرة"
-          subtitle="أقوى المواجهات الكروية في الدوريات العالمية والمحلية"
-          actionText="عرض كل المباريات"
+          title="Live Matches of the Day"
+          subtitle="Top football clashes in global and domestic leagues"
+          actionText="View All Matches"
           onAction={() => setCurrentTab('sports')}
         >
           {matches.map((match) => (
@@ -236,7 +236,7 @@ export const HomePage: React.FC = () => {
               key={match.id}
               match={match}
               onPlay={handlePlayMatch}
-              className="w-[240px] sm:w-[280px] shrink-0"
+              className="w-[260px] sm:w-[280px] shrink-0"
             />
           ))}
         </ContentRail>
@@ -247,9 +247,9 @@ export const HomePage: React.FC = () => {
         <ShimmerRail aspect="2/3" />
       ) : tvShows.length > 0 ? (
         <ContentRail
-          title="مسلسلات تلفزيونية مختارة"
-          subtitle="حلقات جديدة ومواسم كاملة بدون إعلانات مزعجة"
-          actionText="تصفح المسلسلات"
+          title="Featured TV Series"
+          subtitle="New episodes and complete seasons ad-free"
+          actionText="Browse Series"
           onAction={() => setCurrentTab('movies')}
         >
           {tvShows.map((tv) => (
@@ -261,9 +261,9 @@ export const HomePage: React.FC = () => {
       {/* Rail 5: Popular Action & Thriller Movies */}
       {actionMovies.length > 0 && (
         <ContentRail
-          title="أفلام الأكشن والإثارة والتشويق"
-          subtitle="مختارات سينمائية عالية التقييم بدقة بلوراي"
-          actionText="عرض المزيد"
+          title="Action & Thriller Movies"
+          subtitle="High-octane blockbusters in 1080p Full HD"
+          actionText="View More"
           onAction={() => setCurrentTab('movies')}
         >
           {actionMovies.map((movie) => (
@@ -277,9 +277,9 @@ export const HomePage: React.FC = () => {
         <ShimmerRail aspect="16/9" />
       ) : channels.length > 0 ? (
         <ContentRail
-          title="قنوات تلفزيونية شائعة"
-          subtitle="قنوات الأخبار، الترفيه، المنوعات والوثائقيات"
-          actionText="عرض الكل"
+          title="Popular TV Channels"
+          subtitle="News, sports, entertainment, and documentary channels"
+          actionText="View All"
           onAction={() => setCurrentTab('channels')}
         >
           {channels.slice(0, 16).map((channel) => (

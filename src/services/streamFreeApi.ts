@@ -12,16 +12,16 @@ export interface SportsCategoryInfo {
 }
 
 export const SPORTS_CATEGORIES: SportsCategoryInfo[] = [
-  { id: 'all', nameEn: 'All Sports', nameAr: 'الكل', icon: '🏆' },
-  { id: 'soccer', nameEn: 'Soccer', nameAr: 'كرة القدم', icon: '⚽' },
-  { id: 'basketball', nameEn: 'Basketball', nameAr: 'كرة السلة', icon: '🏀' },
-  { id: 'combat', nameEn: 'Combat', nameAr: 'فنون قتالية', icon: '🥊' },
-  { id: 'football', nameEn: 'Football', nameAr: 'كرة قدم أمريكية', icon: '🏈' },
-  { id: 'racing', nameEn: 'Racing', nameAr: 'سباقات F1', icon: '🏎️' },
-  { id: 'tennis', nameEn: 'Tennis', nameAr: 'تنس', icon: '🎾' },
-  { id: 'hockey', nameEn: 'Hockey', nameAr: 'هوكي', icon: '🏒' },
-  { id: 'baseball', nameEn: 'Baseball', nameAr: 'بيسبول', icon: '⚾' },
-  { id: 'cricket', nameEn: 'Cricket', nameAr: 'كريكت', icon: '🏏' },
+  { id: 'all', nameEn: 'All Sports', nameAr: 'All Sports', icon: '🏆' },
+  { id: 'soccer', nameEn: 'Soccer', nameAr: 'Soccer', icon: '⚽' },
+  { id: 'basketball', nameEn: 'Basketball', nameAr: 'Basketball', icon: '🏀' },
+  { id: 'combat', nameEn: 'Combat', nameAr: 'Combat', icon: '🥊' },
+  { id: 'football', nameEn: 'Football', nameAr: 'Football', icon: '🏈' },
+  { id: 'racing', nameEn: 'Racing', nameAr: 'Racing', icon: '🏎️' },
+  { id: 'tennis', nameEn: 'Tennis', nameAr: 'Tennis', icon: '🎾' },
+  { id: 'hockey', nameEn: 'Hockey', nameAr: 'Hockey', icon: '🏒' },
+  { id: 'baseball', nameEn: 'Baseball', nameAr: 'Baseball', icon: '⚾' },
+  { id: 'cricket', nameEn: 'Cricket', nameAr: 'Cricket', icon: '🏏' },
 ];
 
 // Official high-resolution crests
@@ -49,6 +49,7 @@ export const TEAM_LOGO_MAP: Record<string, string> = {
   'ipswich town': 'https://a.espncdn.com/i/teamlogos/soccer/500/373.png',
   sunderland: 'https://a.espncdn.com/i/teamlogos/soccer/500/366.png',
   'grimsby town': 'https://a.espncdn.com/i/teamlogos/soccer/500/386.png',
+  fenerbahce: 'https://a.espncdn.com/i/teamlogos/soccer/500/436.png',
   // Serie A
   bologna: 'https://a.espncdn.com/i/teamlogos/soccer/500/107.png',
   parma: 'https://a.espncdn.com/i/teamlogos/soccer/500/115.png',
@@ -122,14 +123,17 @@ export const LEAGUE_BADGE_MAP: Record<string, string> = {
   'nfl': 'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png',
   'ncaaf': 'https://a.espncdn.com/i/teamlogos/ncaa/500/scoreboard/ncaa.png',
   'ncaa': 'https://a.espncdn.com/i/teamlogos/ncaa/500/scoreboard/ncaa.png',
+  'fa cup': 'https://a.espncdn.com/i/leaguelogos/soccer/500/1000.png',
+  'facup': 'https://a.espncdn.com/i/leaguelogos/soccer/500/1000.png',
   'ufc': 'https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-mma.png&w=100&h=100',
   'f1': 'https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-f1.png&w=100&h=100',
 };
 
 export function resolveLeagueBadge(leagueName?: string, category?: string): string | undefined {
   const clean = (leagueName || '').toLowerCase().trim();
+  if (!clean) return undefined;
   for (const [key, url] of Object.entries(LEAGUE_BADGE_MAP)) {
-    if (clean.includes(key) || key.includes(clean)) {
+    if (clean === key || clean.includes(key)) {
       return url;
     }
   }
@@ -182,16 +186,30 @@ export function getTeamColor(name?: string, isRightSide: boolean = false): strin
 }
 
 export function resolveTeamLogo(teamName: string, existingLogo?: string): string | undefined {
-  if (existingLogo && existingLogo.trim().length > 0 && !existingLogo.includes('default') && !existingLogo.includes('null')) {
+  if (
+    existingLogo &&
+    existingLogo.trim().length > 0 &&
+    !existingLogo.includes('default') &&
+    !existingLogo.includes('null') &&
+    !existingLogo.includes('ui-avatars')
+  ) {
     return existingLogo;
   }
   const clean = teamName.toLowerCase().trim();
+  if (TEAM_LOGO_MAP[clean]) {
+    return TEAM_LOGO_MAP[clean];
+  }
   for (const [key, url] of Object.entries(TEAM_LOGO_MAP)) {
-    if (clean.includes(key) || key.includes(clean)) {
+    if (clean === key || clean.includes(key)) {
       return url;
     }
   }
-  return existingLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(teamName)}&background=141628&color=fff&size=128`;
+  for (const [key, url] of Object.entries(TEAM_LOGO_MAP)) {
+    if (key.includes(clean) && clean.length >= 4) {
+      return url;
+    }
+  }
+  return undefined;
 }
 
 export interface RawStreamFreeSource {
@@ -234,7 +252,7 @@ export function formatMatchTime(timestampSec: number): {
     return {
       isLive: true,
       statusBadge: 'LIVE',
-      statusText: 'مباشر الآن',
+      statusText: 'LIVE NOW',
       formattedTime,
     };
   }
@@ -247,14 +265,14 @@ export function formatMatchTime(timestampSec: number): {
     let statusText = '';
     if (diffHours === 0) {
       statusBadge = `${diffMinutes}m`;
-      statusText = `تبدأ بعد ${diffMinutes} د`;
+      statusText = `Starts in ${diffMinutes}m`;
     } else if (diffHours < 24) {
       const remainingMins = diffMinutes % 60;
       statusBadge = remainingMins > 0 ? `${diffHours}h ${remainingMins}m` : `${diffHours}h`;
-      statusText = `تبدأ بعد ${diffHours} س`;
+      statusText = `Starts in ${diffHours}h`;
     } else {
       statusBadge = formattedTime;
-      statusText = `اليوم ${formattedTime}`;
+      statusText = `Today ${formattedTime}`;
     }
 
     return {
@@ -268,7 +286,7 @@ export function formatMatchTime(timestampSec: number): {
   return {
     isLive: false,
     statusBadge: 'ENDED',
-    statusText: 'انتهت',
+    statusText: 'Ended',
     formattedTime,
   };
 }
@@ -295,9 +313,9 @@ export function buildMatchServers(
       const isFHD = q.includes('1080') || q.includes('FHD');
       const isSD = q.includes('540') || q.includes('SD') || q.includes('480');
       
-      let serverLabel = `سيرفر ${idx + 1} (${q})`;
-      if (isFHD) serverLabel = `سيرفر 1 (FHD 1080p)`;
-      else if (isSD) serverLabel = `سيرفر 2 (SD 540p)`;
+      let serverLabel = `Server ${idx + 1} (${q})`;
+      if (isFHD) serverLabel = `Server 1 (FHD 1080p)`;
+      else if (isSD) serverLabel = `Server 2 (SD 540p)`;
 
       servers.push({
         id: `api-src-${idx}`,
@@ -316,7 +334,7 @@ export function buildMatchServers(
   if (!hasFhd) {
     servers.unshift({
       id: 'fhd-canonical',
-      name: `سيرفر 1 (FHD 1080p)`,
+      name: `Server 1 (FHD 1080p)`,
       quality: 'FHD',
       url: `${STRMFREE_EMBED_BASE}/embed/${cat}/${streamKey}1080p`,
       isLive: false,
@@ -326,7 +344,7 @@ export function buildMatchServers(
   if (!hasSd) {
     servers.push({
       id: 'sd-canonical',
-      name: `سيرفر 2 (SD 540p)`,
+      name: `Server 2 (SD 540p)`,
       quality: 'SD',
       url: `${STRMFREE_EMBED_BASE}/embed/${cat}/${streamKey}540p`,
       isLive: false,
@@ -338,7 +356,7 @@ export function buildMatchServers(
   if (!servers.some((s) => s.url === cdnMirrorUrl)) {
     servers.push({
       id: 'cdn-mirror',
-      name: `سيرفر 3 (StreamFree CDN)`,
+      name: `Server 3 (StreamFree CDN)`,
       quality: 'HD',
       url: cdnMirrorUrl,
       isLive: true,
@@ -350,7 +368,7 @@ export function buildMatchServers(
   if (!servers.some((s) => s.url === backupMirrorUrl)) {
     servers.push({
       id: 'backup-mirror',
-      name: `سيرفر 4 (سيرفر احتياطي)`,
+      name: `Server 4 (Backup Server)`,
       quality: 'Auto',
       url: backupMirrorUrl,
       isLive: true,
@@ -509,9 +527,7 @@ export const streamFreeService = {
           // Only match ESPN scoreboard if BOTH teams match to prevent cross-tournament logo corruption
           const espnMatch =
             espnScores[cleanName] ||
-            (t1Clean && t2Clean && espnScores[t1Clean]?.team2.name.toLowerCase().includes(t2Clean)
-              ? espnScores[t1Clean]
-              : undefined);
+            (t1Clean && t2Clean ? (espnScores[`${t1Clean} vs ${t2Clean}`] || espnScores[`${t2Clean} vs ${t1Clean}`]) : undefined);
 
           const t1Score = espnMatch ? espnMatch.team1.score : (s.team1?.score ?? (isLive ? 1 : 0));
           const t2Score = espnMatch ? espnMatch.team2.score : (s.team2?.score ?? (isLive ? 0 : 0));

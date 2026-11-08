@@ -7,11 +7,11 @@ export const BottomNav: React.FC = () => {
   const { currentTab, setCurrentTab } = useAppStore();
 
   const navItems: Array<{ tab: NavigationTab; label: string; icon: React.ReactNode }> = [
-    { tab: 'home', label: 'الرئيسية', icon: <Home className="w-5 h-5" /> },
-    { tab: 'sports', label: 'المباريات', icon: <Trophy className="w-5 h-5" /> },
-    { tab: 'channels', label: 'القنوات', icon: <Tv className="w-5 h-5" /> },
-    { tab: 'movies', label: 'أفلام ومسلسلات', icon: <Film className="w-5 h-5" /> },
-    { tab: 'favorites', label: 'قائمتي', icon: <Bookmark className="w-5 h-5" /> },
+    { tab: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
+    { tab: 'sports', label: 'Matches', icon: <Trophy className="w-5 h-5" /> },
+    { tab: 'channels', label: 'Channels', icon: <Tv className="w-5 h-5" /> },
+    { tab: 'movies', label: 'Movies & TV', icon: <Film className="w-5 h-5" /> },
+    { tab: 'favorites', label: 'My List', icon: <Bookmark className="w-5 h-5" /> },
   ];
 
   return (

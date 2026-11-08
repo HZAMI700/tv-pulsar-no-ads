@@ -73,15 +73,16 @@ interface AppState {
 
 const loadInitialLanguage = (): 'ar' | 'en' => {
   try {
-    const saved = localStorage.getItem('pulsar_language');
-    const lang = saved === 'en' ? 'en' : 'ar';
+    const saved = localStorage.getItem('pulsar_language_v2');
+    // Default to 'en' (English) as requested by user
+    const lang = saved === 'ar' ? 'ar' : 'en';
     if (typeof document !== 'undefined') {
       document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
       document.documentElement.lang = lang;
     }
     return lang;
   } catch {
-    return 'ar';
+    return 'en';
   }
 };
 
@@ -237,11 +238,11 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       const updatedItem: WatchHistoryItem = {
         id: existing?.id || mediaId,
-        title: existing?.title || tvMeta?.showTitle || 'متابعة المشاهدة',
+        title: existing?.title || tvMeta?.showTitle || 'Continue Watching',
         subtitle:
           tvMeta && tvMeta.season && tvMeta.episode
-            ? `الموسم ${tvMeta.season} • ح ${tvMeta.episode} (${timeText})`
-            : `استئناف (${timeText})`,
+            ? `Season ${tvMeta.season} • Ep ${tvMeta.episode} (${timeText})`
+            : `Resume (${timeText})`,
         type: tvMeta ? 'tv' : existing?.type || 'movie',
         streamUrl: existing?.streamUrl || '',
         poster: existing?.poster,
@@ -325,6 +326,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setLanguage: (lang: 'ar' | 'en') => {
     try {
       localStorage.setItem('pulsar_language', lang);
+      localStorage.setItem('pulsar_language_v2', lang);
       if (typeof document !== 'undefined') {
         document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
         document.documentElement.lang = lang;

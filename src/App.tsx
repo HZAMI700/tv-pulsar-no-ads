@@ -101,12 +101,14 @@ export const App: React.FC = () => {
   // Always reset scroll to the very top whenever the navigation tab changes
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
   }, [currentTab]);
 
   return (
     <AppShell>
       {/* Tab Switcher with Unified Motion System & Error Resilience */}
-      <ErrorBoundary fallbackTitle="حدث خطأ في تحميل الصفحة">
+      <ErrorBoundary fallbackTitle="Failed to load page">
         <div key={currentTab} className="motion-page min-h-[calc(100vh-130px)]">
           {currentTab === 'home' && <HomePage />}
           {currentTab === 'sports' && <SportsPage />}

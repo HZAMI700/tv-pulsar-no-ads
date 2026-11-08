@@ -46,10 +46,10 @@ export const TelegramModal: React.FC = () => {
         {/* Header */}
         <div className="space-y-2">
           <h2 className="text-xl md:text-2xl font-black text-white">
-            انضم إلى قناتنا على تيليجرام!
+            Join Our Telegram Channel!
           </h2>
           <p className="text-xs md:text-sm text-white/70 leading-relaxed max-w-sm mx-auto">
-            كن أول من يحصل على روابط البث المباشر لأهم المباريات، تحديثات السيرفرات اليومية وأحدث الأفلام والمسلسلات.
+            Get instant match broadcast links, daily server updates, and trending movies and TV series ad-free.
           </p>
         </div>
 
@@ -68,14 +68,14 @@ export const TelegramModal: React.FC = () => {
             icon={<Send className="w-4 h-4" />}
             onClick={handleJoin}
           >
-            انضم الآن للقناة
+            Join Channel Now
           </GlowButton>
 
           <button
             onClick={handleClose}
             className="w-full sm:w-auto px-6 py-3 rounded-xl text-xs font-semibold text-white/50 hover:text-white transition-colors cursor-pointer"
           >
-            تذكيري لاحقاً
+            Maybe Later
           </button>
         </div>
       </div>

@@ -63,7 +63,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({ channel, onPlay, class
 
         {/* Green LIVE Pill Badge */}
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#00E676] text-black shadow-[0_0_8px_rgba(0,230,118,0.4)]">
-          مباشر •
+          LIVE •
         </span>
       </div>
 

@@ -305,7 +305,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
               break;
             default:
               setHasError(true);
-              setErrorMessage('تعذر تشغيل البث المباشر. يرجى تجربة قناة أخرى.');
+              setErrorMessage('Unable to play live stream. Please try another channel.');
               hls.destroy();
               break;
           }
@@ -321,7 +321,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
       });
       video.addEventListener('error', () => {
         setHasError(true);
-        setErrorMessage('تعذر تحميل البث في المتصفح.');
+        setErrorMessage('Unable to load stream in browser.');
       });
     }
 
@@ -512,7 +512,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
           className="absolute top-1.5 right-3 z-40 px-2.5 py-0.5 rounded-full bg-black/70 hover:bg-black/90 border border-white/15 text-white/90 text-[10px] font-bold backdrop-blur-md shadow-md transition-all cursor-pointer flex items-center gap-1 active:scale-95 animate-in fade-in"
         >
           <ArrowRight className="w-3 h-3 text-[#FF1838]" />
-          <span>عناصر التحكم</span>
+          <span>Controls</span>
         </button>
       )}
 
@@ -529,7 +529,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             aria-label="Back"
           >
             <ArrowRight className="w-3.5 h-3.5" />
-            <span>رجوع</span>
+            <span>Back</span>
           </button>
 
           <div className="min-w-0">
@@ -537,7 +537,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
               <h2 className="text-xs sm:text-sm font-black text-white drop-shadow truncate max-w-[140px] sm:max-w-xs md:max-w-md">
                 {media.title}
               </h2>
-              {media.isLive && <MetaBadge type="live" label="مباشر" />}
+              {media.isLive && <MetaBadge type="live" label="LIVE" />}
               {(media.type === 'movie' || media.type === 'tv') && (
                 <span className="hidden xs:inline-block px-1.5 py-0.2 rounded text-[9px] font-black bg-[#FF1838]/20 text-[#FF1838] border border-[#FF1838]/40">
                   VidLink Pro
@@ -572,11 +572,11 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         ? 'bg-[#FF1838] text-white shadow-[0_0_10px_rgba(255,24,56,0.6)] font-black'
                         : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white'
                     }`}
-                    title={`تبديل إلى ${srv.name}`}
+                    title={`Switch to ${srv.name}`}
                   >
                     <span>{srv.name}</span>
                     {srv.isBest && (
-                      <span className="text-[9px] text-[#00E676] font-bold">⚡ الأفضل</span>
+                      <span className="text-[9px] text-[#00E676] font-bold">⚡ Best</span>
                     )}
                   </button>
                 );
@@ -594,9 +594,9 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                 }}
                 disabled={currentEpisode <= 1}
                 className="px-1.5 py-0.5 rounded bg-white/10 hover:bg-white/20 disabled:opacity-25 disabled:cursor-not-allowed text-[10px] font-bold text-white transition-all active:scale-95"
-                title="الحلقة السابقة"
+                title="Previous Episode"
               >
-                السابقة
+                Prev
               </button>
               <span className="px-1 text-[10px] sm:text-[11px] font-black text-[#FF1838] tracking-wider whitespace-nowrap">
                 S{currentSeason}:E{currentEpisode}
@@ -607,9 +607,9 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                   setIsLoading(true);
                 }}
                 className="px-1.5 py-0.5 rounded bg-[#FF1838] hover:bg-[#ff3350] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm"
-                title="الحلقة التالية"
+                title="Next Episode"
               >
-                التالية
+                Next
               </button>
             </div>
           )}
@@ -632,10 +632,10 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
               }
             }}
             className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 active:scale-95"
-            title="تأكيد تشغيل الصوت"
+            title="Unmute / Audio"
           >
             <Volume2 className="w-3 h-3 text-[#00E676]" />
-            <span className="hidden sm:inline">الصوت</span>
+            <span className="hidden sm:inline">Audio</span>
           </button>
 
           {/* Aspect Ratio / Zoom Toggle for Full Screen Fill */}
@@ -646,10 +646,10 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                 ? 'bg-[#FF1838]/20 border-[#FF1838] text-white shadow-[0_0_8px_rgba(255,24,56,0.4)]'
                 : 'bg-white/10 border-white/10 text-white/70 hover:text-white'
             }`}
-            title="تبديل ملء الشاشة الكامل"
+            title="Toggle Fullscreen Aspect Ratio"
           >
             <Scaling className="w-3 h-3" />
-            <span className="hidden md:inline">{isCoverFit ? 'ملء كامل' : 'النسبة الأصلية'}</span>
+            <span className="hidden md:inline">{isCoverFit ? 'Cover Fill' : 'Original Ratio'}</span>
           </button>
 
           {/* Fullscreen Button */}
@@ -685,9 +685,9 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         {hasError && (
           <div className="absolute z-20 max-w-md p-6 rounded-2xl bg-[#0E1018]/95 border border-white/15 text-center space-y-4 shadow-2xl">
             <AlertCircle className="w-10 h-10 text-[#FF1838] mx-auto" />
-            <h3 className="text-base font-bold text-white">تعذر تحميل البث المباشر</h3>
+            <h3 className="text-base font-bold text-white">Unable to Load Stream</h3>
             <p className="text-xs text-white/60">
-              {errorMessage || 'يرجى التحقق من اتصال الإنترنت والضغط على إعادة المحاولة.'}
+              {errorMessage || 'Please check your connection and tap retry.'}
             </p>
             <div className="flex items-center justify-center gap-3 pt-2">
               <GlowButton
@@ -702,10 +702,10 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                   }
                 }}
               >
-                إعادة المحاولة
+                Retry
               </GlowButton>
               <GlowButton size="sm" variant="secondary" onClick={onClose}>
-                إغلاق
+                Close
               </GlowButton>
             </div>
           </div>

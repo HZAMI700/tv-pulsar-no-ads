@@ -122,7 +122,7 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
   const displayOverview =
     details.overview ||
     series.overview ||
-    `استمتع بمشاهدة حلقات ومواسم مسلسل ${displayTitle} بجودة عالية 1080p عبر مشغل VidLink Pro فائق السرعة وبدون إعلانات.`;
+    `Enjoy watching all seasons and episodes of ${displayTitle} in high definition 1080p via our high-speed ad-free player.`;
   const displayBackdrop =
     details.backdrop_url || series.backdrop_url || series.poster_url;
   const displayRating =
@@ -224,7 +224,7 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
             <span>{displayRating}</span>
           </div>
           <span>•</span>
-          <span>{totalEpisodesCount} حلقة</span>
+          <span>{totalEpisodesCount} Episodes</span>
           <span>•</span>
           <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-white/10 text-white/90 border border-white/20">
             TV-MA
@@ -247,7 +247,7 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
             <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-black text-black" />
             <span>
               {hasResume
-                ? `استئناف (الموسم ${resumeSeason} الحلقة ${resumeEpisode})`
+                ? `Resume (S${resumeSeason} • E${resumeEpisode})`
                 : 'Play Episode 1'}
             </span>
           </button>
@@ -420,11 +420,11 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
                             {isWatched ? (
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#00E676]/20 border border-[#00E676]/40 text-[#00E676] text-[10px] font-bold shrink-0">
                                 <Check className="w-2.5 h-2.5 stroke-[3]" />
-                                <span>تمت المشاهدة</span>
+                                <span>Watched</span>
                               </span>
                             ) : hasPartial ? (
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-bold shrink-0">
-                                <span>متابعة {progressPct}%</span>
+                                <span>Watched {progressPct}%</span>
                               </span>
                             ) : null}
                           </div>
@@ -459,7 +459,7 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
               </div>
             ) : (
               <div className="text-center py-10 text-white/50 text-xs">
-                لا توجد حلقات متاحة لهذا الموسم حالياً.
+                No episodes currently available for this season.
               </div>
             )}
           </div>
@@ -470,13 +470,13 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
           <div className="p-8 text-center bg-white/5 rounded-2xl border border-white/5">
             <Play className="w-8 h-8 text-white/30 mx-auto mb-2" />
             <p className="text-xs text-white/60">
-              العرض الدعائي الرسمي للمسلسل متاح عبر المشغل المباشر.
+              Official HD trailer is available directly through the video player.
             </p>
             <button
               onClick={() => handlePlayEpisode(1)}
               className="mt-3 px-4 py-2 rounded-xl bg-[#E50914] text-white text-xs font-bold"
             >
-              تشغيل المقطع الدعائي
+              Play Trailer
             </button>
           </div>
         )}
@@ -485,7 +485,7 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
         {activeSubTab === 'similar' && (
           <div className="p-8 text-center bg-white/5 rounded-2xl border border-white/5">
             <p className="text-xs text-white/60">
-              تصفح المزيد من المسلسلات والأعمال المشابهة عبر شريط Collections و Trending Now.
+              Explore more TV series and similar shows via Collections and Trending Now on the Home page.
             </p>
           </div>
         )}

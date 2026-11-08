@@ -109,7 +109,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onSelect, className 
                 item.type === 'tv' ? 'bg-purple-600/90 text-white' : 'bg-[#E50914]/90 text-white'
               }`}
             >
-              {item.type === 'tv' ? 'مسلسل' : 'فيلم'}
+              {item.type === 'tv' ? 'Series' : 'Movie'}
             </span>
             <span className="truncate max-w-[70px]">{genreText}</span>
           </div>

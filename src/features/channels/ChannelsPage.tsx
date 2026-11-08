@@ -13,10 +13,10 @@ interface CountryFilter {
 }
 
 const COUNTRIES: CountryFilter[] = [
-  { id: 'all', label: 'جميع القنوات', flag: '🌍' },
+  { id: 'all', label: 'All Channels', flag: '🌍' },
   {
     id: 'qa',
-    label: 'قطر (beIN & الكأس)',
+    label: 'Qatar (beIN & Al Kass)',
     flag: '🇶🇦',
     matcher: (c) =>
       Boolean(
@@ -32,7 +32,7 @@ const COUNTRIES: CountryFilter[] = [
   },
   {
     id: 'sa',
-    label: 'السعودية (SSC)',
+    label: 'Saudi Arabia (SSC)',
     flag: '🇸🇦',
     matcher: (c) =>
       Boolean(
@@ -44,7 +44,7 @@ const COUNTRIES: CountryFilter[] = [
   },
   {
     id: 'ae',
-    label: 'الإمارات',
+    label: 'UAE (AD Sports)',
     flag: '🇦🇪',
     matcher: (c) =>
       Boolean(
@@ -59,7 +59,7 @@ const COUNTRIES: CountryFilter[] = [
   },
   {
     id: 'eg',
-    label: 'مصر',
+    label: 'Egypt (ON Time)',
     flag: '🇪🇬',
     matcher: (c) =>
       Boolean(
@@ -75,7 +75,7 @@ const COUNTRIES: CountryFilter[] = [
   },
   {
     id: 'tn',
-    label: 'تونس',
+    label: 'Tunisia & North Africa',
     flag: '🇹🇳',
     matcher: (c) =>
       Boolean(
@@ -87,7 +87,7 @@ const COUNTRIES: CountryFilter[] = [
   },
   {
     id: 'uk',
-    label: 'بريطانيا',
+    label: 'United Kingdom (Sky & TNT)',
     flag: '🇬🇧',
     matcher: (c) =>
       Boolean(
@@ -108,7 +108,7 @@ const COUNTRIES: CountryFilter[] = [
   },
   {
     id: 'us',
-    label: 'أمريكا',
+    label: 'USA (ESPN, NBC, CBS)',
     flag: '🇺🇸',
     matcher: (c) =>
       Boolean(
@@ -129,7 +129,7 @@ const COUNTRIES: CountryFilter[] = [
   },
   {
     id: 'fr',
-    label: 'فرنسا',
+    label: 'France (Canal+ & RMC)',
     flag: '🇫🇷',
     matcher: (c) =>
       Boolean(
@@ -146,7 +146,7 @@ const COUNTRIES: CountryFilter[] = [
   },
   {
     id: 'es',
-    label: 'إسبانيا',
+    label: 'Spain (Movistar & DAZN)',
     flag: '🇪🇸',
     matcher: (c) =>
       Boolean(
@@ -163,7 +163,7 @@ const COUNTRIES: CountryFilter[] = [
   },
   {
     id: 'de',
-    label: 'ألمانيا',
+    label: 'Germany (Sky & DAZN)',
     flag: '🇩🇪',
     matcher: (c) =>
       Boolean(
@@ -177,7 +177,7 @@ const COUNTRIES: CountryFilter[] = [
   },
   {
     id: 'it',
-    label: 'إيطاليا',
+    label: 'Italy (Sky Sport IT)',
     flag: '🇮🇹',
     matcher: (c) =>
       Boolean(
@@ -190,7 +190,7 @@ const COUNTRIES: CountryFilter[] = [
   },
   {
     id: 'dk',
-    label: 'الدنمارك',
+    label: 'Denmark (Viaplay & TV2)',
     flag: '🇩🇰',
     matcher: (c) =>
       Boolean(
@@ -204,7 +204,7 @@ const COUNTRIES: CountryFilter[] = [
   },
   {
     id: 'int',
-    label: 'دولي',
+    label: 'International',
     flag: '🌐',
     matcher: (c) =>
       Boolean(
@@ -294,7 +294,7 @@ export const ChannelsPage: React.FC = () => {
     setActiveMedia({
       id: c.id,
       title: c.name,
-      subtitle: c.program || `${c.category} • بث مباشر عالي الدقة`,
+      subtitle: c.program || `${c.category} • HD Live Stream`,
       type: 'channel',
       streamUrl: c.src,
       poster: c.resolvedLogo,
@@ -322,14 +322,14 @@ export const ChannelsPage: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl md:text-2xl font-black text-white tracking-tight">
-                  دليل القنوات الحية
+                  Live Channels Directory
                 </h1>
                 <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-[#FF1838]/20 text-[#FF1838] border border-[#FF1838]/40">
-                  {channels.length} قناة متاحة
+                  {channels.length} Channels Available
                 </span>
               </div>
               <p className="text-xs text-white/60 mt-0.5">
-                قنوات رياضية وترفيهية وعالمية مباشرة بدون تقطيع مقسمة حسب الدول والأعلام
+                Direct high-definition sports and international television channels categorized by nation
               </p>
             </div>
           </div>
@@ -343,8 +343,8 @@ export const ChannelsPage: React.FC = () => {
                 setSearchFilter(e.target.value);
                 setVisibleCount(24);
               }}
-              placeholder="ابحث عن قناة (beIN, Sky, SSC, AD, ON...)"
-              className="w-full h-10 pr-9 pl-4 rounded-2xl bg-[#090A12] border border-white/10 text-xs text-white placeholder-white/40 focus:border-[#FF1838] focus:outline-none transition-colors"
+              placeholder="Search channel (beIN, Sky, SSC, ESPN, Canal...)"
+              className="w-full h-10 pr-4 pl-9 rounded-2xl bg-[#090A12] border border-white/10 text-xs text-white placeholder-white/40 focus:border-[#FF1838] focus:outline-none transition-colors"
             />
             <Search className="absolute right-3 top-3 w-4 h-4 text-white/40" />
           </div>
@@ -398,18 +398,18 @@ export const ChannelsPage: React.FC = () => {
             {hasMore ? (
               <div className="flex items-center gap-2 text-xs text-white/50 animate-pulse">
                 <span className="w-2 h-2 rounded-full bg-[#FF1838]" />
-                <span>جاري تحميل المزيد من القنوات تلقائياً ({filteredChannels.length - visibleCount} متبقية)...</span>
+                <span>Loading more channels automatically ({filteredChannels.length - visibleCount} remaining)...</span>
               </div>
             ) : (
-              <span className="text-[11px] text-white/30 font-medium">تم عرض جميع القنوات في هذه الفئة ({filteredChannels.length})</span>
+              <span className="text-[11px] text-white/30 font-medium">All channels in this category displayed ({filteredChannels.length})</span>
             )}
           </div>
         </div>
       ) : (
         <div className="p-12 text-center rounded-3xl bg-[#12131D] border border-white/10 space-y-3">
           <Tv className="w-12 h-12 text-white/30 mx-auto" />
-          <h3 className="text-base font-bold text-white">لم يتم العثور على أي قناة مطابقة</h3>
-          <p className="text-xs text-white/50">تأكد من كتابة اسم القناة بشكل صحيح أو اختر دولة أخرى من قائمة الأعلام.</p>
+          <h3 className="text-base font-bold text-white">No matching channels found</h3>
+          <p className="text-xs text-white/50">Make sure the channel name is spelled correctly or select another country flag.</p>
         </div>
       )}
     </div>

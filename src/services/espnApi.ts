@@ -18,13 +18,13 @@ export interface EspnMatchResult {
 }
 
 const ESPN_SOCCER_LEAGUES = [
-  { key: 'eng.1', name: 'الدوري الإنجليزي الممتاز' },
-  { key: 'esp.1', name: 'الدوري الإسباني (LaLiga)' },
-  { key: 'ita.1', name: 'الدوري الإيطالي (Serie A)' },
-  { key: 'ger.1', name: 'الدوري الألماني (Bundesliga)' },
-  { key: 'fra.1', name: 'الدوري الفرنسي (Ligue 1)' },
-  { key: 'uefa.champions', name: 'دوري أبطال أوروبا' },
-  { key: 'sau.1', name: 'دوري روشن السعودي' },
+  { key: 'eng.1', name: 'Premier League' },
+  { key: 'esp.1', name: 'LaLiga' },
+  { key: 'ita.1', name: 'Serie A' },
+  { key: 'ger.1', name: 'Bundesliga' },
+  { key: 'fra.1', name: 'Ligue 1' },
+  { key: 'uefa.champions', name: 'UEFA Champions League' },
+  { key: 'sau.1', name: 'Saudi Pro League' },
 ];
 
 let cachedResults: Record<string, EspnMatchResult> = {};
@@ -58,10 +58,11 @@ export const espnService = {
 
           const state = ev.status?.type?.state; // 'in', 'pre', 'post'
           const isLive = state === 'in';
-          const statusText = ev.status?.type?.detail || (isLive ? 'مباشر الآن' : 'قريباً');
+          const statusText = ev.status?.type?.detail || (isLive ? 'LIVE NOW' : 'Upcoming');
 
-          const t1Name = home.team?.name || home.team?.displayName || '';
-          const t2Name = away.team?.name || away.team?.displayName || '';
+          const t1Name = (home.team?.name || home.team?.displayName || '').trim();
+          const t2Name = (away.team?.name || away.team?.displayName || '').trim();
+          if (!t1Name || !t2Name) continue;
 
           const matchObj: EspnMatchResult = {
             id: ev.id,
@@ -82,13 +83,11 @@ export const espnService = {
             },
           };
 
-          // Index by normalized names for fast fuzzy match
+          // Index strictly by normalized match keys to avoid cross-match collisions
           const key1 = `${t1Name.toLowerCase()} vs ${t2Name.toLowerCase()}`;
           const key2 = `${t2Name.toLowerCase()} vs ${t1Name.toLowerCase()}`;
           results[key1] = matchObj;
           results[key2] = matchObj;
-          results[t1Name.toLowerCase()] = matchObj;
-          results[t2Name.toLowerCase()] = matchObj;
         }
       } catch (e) {
         // Ignore individual network errors
@@ -124,22 +123,22 @@ export const espnService = {
   async matchWithEspn(matchName: string, team1Name?: string, team2Name?: string): Promise<EspnMatchResult | null> {
     const scores = await this.getScoreboards();
 
-    const clean = matchName.toLowerCase().replace(/[^a-z0-9]/g, ' ');
+    const clean = matchName.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
     if (scores[clean]) return scores[clean];
 
-    if (team1Name) {
-      const t1 = team1Name.toLowerCase().trim();
-      if (scores[t1]) return scores[t1];
-    }
-    if (team2Name) {
-      const t2 = team2Name.toLowerCase().trim();
-      if (scores[t2]) return scores[t2];
-    }
+    const t1 = team1Name?.toLowerCase().trim() || '';
+    const t2 = team2Name?.toLowerCase().trim() || '';
 
-    // Fuzzy check against keys
-    for (const [k, v] of Object.entries(scores)) {
-      if (team1Name && k.includes(team1Name.toLowerCase())) return v;
-      if (team2Name && k.includes(team2Name.toLowerCase())) return v;
+    // If both teams are provided, strictly verify BOTH exist in the match key
+    if (t1 && t2) {
+      const directKey = `${t1} vs ${t2}`;
+      if (scores[directKey]) return scores[directKey];
+
+      for (const [k, v] of Object.entries(scores)) {
+        if (k.includes(t1) && k.includes(t2)) {
+          return v;
+        }
+      }
     }
 
     return null;

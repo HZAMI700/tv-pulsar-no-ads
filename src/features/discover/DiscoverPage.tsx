@@ -420,7 +420,7 @@ export const DiscoverPage: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="ابحث عن فيلم أو مسلسل بالإنجليزية أو العربية..."
+              placeholder="Search movies, TV series, actors, and sagas..."
               className="w-full h-11 pr-10 pl-10 rounded-2xl bg-[#141624]/95 border border-white/15 focus:border-[#E50914] text-xs sm:text-sm text-white placeholder-white/40 focus:outline-none shadow-xl transition-all duration-200"
             />
             <Search className="absolute right-3.5 top-3.5 w-4 h-4 text-white/50 pointer-events-none" />
@@ -445,7 +445,7 @@ export const DiscoverPage: React.FC = () => {
                     : 'bg-white/10 text-white/70 hover:text-white'
                 }`}
               >
-                الكل (أفلام ومسلسلات)
+                All (Movies & Series)
               </button>
               <button
                 onClick={() => setSearchTypeFilter('movies')}
@@ -455,7 +455,7 @@ export const DiscoverPage: React.FC = () => {
                     : 'bg-white/10 text-white/70 hover:text-white'
                 }`}
               >
-                أفلام فقط
+                Movies Only
               </button>
               <button
                 onClick={() => setSearchTypeFilter('tv')}
@@ -465,7 +465,7 @@ export const DiscoverPage: React.FC = () => {
                     : 'bg-white/10 text-white/70 hover:text-white'
                 }`}
               >
-                مسلسلات فقط
+                Series Only
               </button>
             </div>
           )}
@@ -543,17 +543,17 @@ export const DiscoverPage: React.FC = () => {
         </div>
       )}
 
-      {/* 3. Continue Watching (متابعة المشاهدة) - Strictly UNDER the Main Top Slider & Only for Movies and Series */}
+      {/* 3. Continue Watching - Strictly UNDER the Main Top Slider & Only for Movies and Series */}
       {!searchQuery && movieSeriesHistory && movieSeriesHistory.length > 0 && (
         <section className="px-4 md:px-8 pt-4 pb-2 space-y-2.5">
           <div className="flex items-center justify-between text-white/90">
             <div className="flex items-center gap-2">
               <History className="w-4 h-4 text-[#FF1838]" />
               <h3 className="text-xs sm:text-sm font-bold tracking-tight">
-                متابعة المشاهدة (سجل العرض)
+                Continue Watching
               </h3>
             </div>
-            <span className="text-[10px] text-white/40 font-bold">أفلام ومسلسلات فقط</span>
+            <span className="text-[10px] text-white/40 font-bold">Movies & TV Series</span>
           </div>
 
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none scroll-smooth">
@@ -588,11 +588,11 @@ export const DiscoverPage: React.FC = () => {
                         <span>
                           {item.tvMeta?.season && item.tvMeta?.episode
                             ? `S${item.tvMeta.season}:E${item.tvMeta.episode} (${timeDisplay})`
-                            : `دقيقة ${m}`}
+                            : `min ${m}`}
                         </span>
                       </span>
                       <span className="px-1 py-0.2 rounded bg-black/60 text-[8px] font-bold text-white/70">
-                        {item.type === 'tv' ? 'مسلسل' : 'فيلم'}
+                        {item.type === 'tv' ? 'Series' : 'Movie'}
                       </span>
                     </div>
                     {/* Progress Bar */}
@@ -613,7 +613,7 @@ export const DiscoverPage: React.FC = () => {
                       removeFromWatchHistory(item.id);
                     }}
                     className="absolute top-1.5 left-1.5 p-1 rounded-full bg-black/70 hover:bg-[#FF1838] text-white/70 hover:text-white transition-colors"
-                    title="إزالة من السجل"
+                    title="Remove from history"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -647,7 +647,7 @@ export const DiscoverPage: React.FC = () => {
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>تصفح شامل (Infinite Scroll)</span>
+            <span>Infinite Catalog</span>
           </button>
         </div>
 
@@ -820,10 +820,10 @@ export const DiscoverPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                  استكشف المزيد من الأفلام والمسلسلات
+                  Explore More Movies & Series
                 </h2>
                 <p className="text-xs text-white/50">
-                  تصفح لا نهائي لآلاف العناوين العالمية مع التحديث التلقائي
+                  Infinite discovery of thousands of global titles with auto-load
                 </p>
               </div>
 
@@ -835,7 +835,7 @@ export const DiscoverPage: React.FC = () => {
                     activeTab === 'movies' ? 'bg-[#E50914] text-white shadow' : 'text-white/60 hover:text-white'
                   }`}
                 >
-                  أفلام (Movies)
+                  Movies
                 </button>
                 <button
                   onClick={() => handleTabChange('tv')}
@@ -843,7 +843,7 @@ export const DiscoverPage: React.FC = () => {
                     activeTab === 'tv' ? 'bg-[#E50914] text-white shadow' : 'text-white/60 hover:text-white'
                   }`}
                 >
-                  مسلسلات (Series)
+                  Series
                 </button>
               </div>
             </div>
@@ -869,7 +869,7 @@ export const DiscoverPage: React.FC = () => {
               {isLoadingMore && (
                 <div className="flex items-center gap-2 text-xs text-white/60">
                   <div className="w-5 h-5 rounded-full border-2 border-[#E50914]/30 border-t-[#E50914] animate-spin" />
-                  <span>جاري تحميل المزيد من العناوين تلقائياً...</span>
+                  <span>Loading more titles automatically...</span>
                 </div>
               )}
             </div>
@@ -947,7 +947,7 @@ export const DiscoverPage: React.FC = () => {
             </div>
           ) : (
             <div className="text-center py-16 text-white/50 text-sm">
-              لم يتم العثور على نتائج مطابقة للبحث.
+              No matching titles found for your search.
             </div>
           )}
 
@@ -957,7 +957,7 @@ export const DiscoverPage: React.FC = () => {
               {isLoadingMore && (
                 <div className="flex items-center gap-2 text-xs text-white/60">
                   <div className="w-5 h-5 rounded-full border-2 border-[#E50914]/30 border-t-[#E50914] animate-spin" />
-                  <span>جاري تحميل المزيد من العناوين تلقائياً...</span>
+                  <span>Loading more titles automatically...</span>
                 </div>
               )}
             </div>

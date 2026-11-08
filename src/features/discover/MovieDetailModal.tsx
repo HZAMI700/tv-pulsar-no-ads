@@ -79,7 +79,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({ movie, onClo
   const isFav = isFavorite(mediaId);
 
   const displayTitle = details.title || movie.title;
-  const displayOverview = details.overview || movie.overview || `استمتع بمشاهدة فيلم ${displayTitle} بجودة عالية 1080p عبر مشغل VidLink Pro فائق السرعة وبدون إعلانات.`;
+  const displayOverview = details.overview || movie.overview || `Enjoy watching ${displayTitle} in high definition 1080p via our high-speed ad-free player.`;
   const displayBackdrop = details.backdrop_url || movie.backdrop_url || movie.poster_url;
   const displayRating = details.rating || (movie.rating && parseFloat(movie.rating) > 0 ? parseFloat(movie.rating).toFixed(1) : '7.8');
   const displayYear = details.year || movie.year || '2026';
@@ -278,13 +278,13 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({ movie, onClo
           <div className="p-8 text-center bg-white/5 rounded-2xl border border-white/5">
             <Play className="w-8 h-8 text-white/30 mx-auto mb-2" />
             <p className="text-xs text-white/60">
-              المقطع الدعائي الرسمي متوفر عبر المشغل بجودة عالية.
+              Official HD trailer is available directly through the video player.
             </p>
             <button
               onClick={handleStartPlayback}
               className="mt-3 px-4 py-2 rounded-xl bg-[#E50914] text-white text-xs font-bold"
             >
-              تشغيل العرض الترويجي
+              Play Trailer
             </button>
           </div>
         )}
@@ -293,7 +293,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({ movie, onClo
         {activeSubTab === 'similar' && (
           <div className="p-8 text-center bg-white/5 rounded-2xl border border-white/5">
             <p className="text-xs text-white/60">
-              تصفح المزيد من الأفلام المشابهة عبر شريط Collections و Trending Now في الصفحة الرئيسية.
+              Explore more similar cinema titles via Collections and Trending Now on the Home page.
             </p>
           </div>
         )}

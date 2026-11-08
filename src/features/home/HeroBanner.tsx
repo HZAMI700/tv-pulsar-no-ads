@@ -17,8 +17,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ item, onPlay }) => {
   // Default featured item if none provided
   const currentItem: ActiveMedia = item || {
     id: 'hero-featured-match',
-    title: 'ريال مدريد ضد برشلونة - كلاسيكو الأرض',
-    subtitle: 'الدوري الإسباني EA Sports • قمة الجولة مباشرة بتقنية 4K HDR',
+    title: 'Real Madrid vs Barcelona - El Clásico',
+    subtitle: 'LaLiga EA Sports • Top matchday clash live in 4K HDR',
     type: 'match',
     streamUrl: 'https://wideiptv.top/player/beINAR',
     poster: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1920&q=80',
@@ -51,12 +51,12 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ item, onPlay }) => {
         <div className="max-w-2xl space-y-3 md:space-y-4">
           {/* Badges Bar */}
           <div className="flex items-center gap-2 flex-wrap">
-            {currentItem.isLive && <MetaBadge type="live" label="مباشر الآن" />}
+            {currentItem.isLive && <MetaBadge type="live" label="LIVE NOW" />}
             <MetaBadge type="uhd" label="4K UHD" />
             <MetaBadge type="hdr" label="HDR10" />
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/10 text-white/90 border border-white/15">
               <Sparkles className="w-3 h-3 text-[#FFB800]" />
-              اختيار المحرر
+              Editor's Choice
             </span>
           </div>
 
@@ -80,7 +80,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ item, onPlay }) => {
               icon={<Play className="w-5 h-5 fill-current" />}
               onClick={() => onPlay?.(currentItem)}
             >
-              شاهد الآن
+              Watch Now
             </GlowButton>
 
             <GlowButton
@@ -89,14 +89,14 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ item, onPlay }) => {
               icon={isFav ? <Check className="w-5 h-5 text-[#00E676]" /> : <Plus className="w-5 h-5" />}
               onClick={() => toggleFavorite(currentItem.id)}
             >
-              {isFav ? 'في قائمتي' : 'أضف لقائمتي'}
+              {isFav ? 'In My List' : 'Add to List'}
             </GlowButton>
 
             {/* Mute Preview Toggle */}
             <button
               onClick={() => setIsMuted(!isMuted)}
               className="p-3 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-black/60 transition-colors cursor-pointer"
-              title={isMuted ? 'تشغيل الصوت' : 'كتم الصوت'}
+              title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
             >
               {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
             </button>
