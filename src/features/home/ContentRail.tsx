@@ -87,6 +87,7 @@ export const ContentRail: React.FC<ContentRailProps> = ({
         style={{
           scrollSnapType: 'x mandatory',
           WebkitOverflowScrolling: 'touch',
+          overscrollBehaviorX: 'contain',
         }}
       >
         {children}

@@ -552,21 +552,23 @@ class DownloadService {
         }
       }
 
-      // Method 1: Hidden download iframe (strictly delegates to browser native download manager without playing media)
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.style.position = 'absolute';
-      iframe.style.width = '0px';
-      iframe.style.height = '0px';
+      // Method 1: Hidden download iframe (strictly delegates to browser native download manager without disrupting the app UI)
+      let iframe = document.getElementById('pulsar-silent-downloader') as HTMLIFrameElement | null;
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'pulsar-silent-downloader';
+        iframe.style.display = 'none';
+        iframe.style.position = 'fixed';
+        iframe.style.width = '0px';
+        iframe.style.height = '0px';
+        iframe.style.border = 'none';
+        iframe.style.opacity = '0';
+        iframe.style.pointerEvents = 'none';
+        document.body.appendChild(iframe);
+      }
       iframe.src = finalUrl;
-      document.body.appendChild(iframe);
-      setTimeout(() => {
-        try {
-          if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-        } catch (_) {}
-      }, 45000);
 
-      // Method 2: Anchor download without target="_blank" (target="_blank" triggers in-browser video playback in a new tab)
+      // Method 2: Anchor trigger fallback
       const a = document.createElement('a');
       a.href = finalUrl;
       if (filename) {
@@ -579,10 +581,9 @@ class DownloadService {
         try {
           if (a.parentNode) a.parentNode.removeChild(a);
         } catch (_) {}
-      }, 5000);
+      }, 4000);
     } catch (e) {
-      console.warn('[DownloadService] Failed direct download trigger', e);
-      window.location.assign(url);
+      console.warn('[DownloadService] Failed direct download trigger:', e);
     }
   }
 

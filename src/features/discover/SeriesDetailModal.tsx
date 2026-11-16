@@ -505,7 +505,7 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
                         </div>
                       </div>
 
-                      {/* Right: Download icon */}
+                      {/* Right: Prominent Download Button */}
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="button"
@@ -514,26 +514,44 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
                             e.stopPropagation();
                             handleToggleDownloadEpisode(ep);
                           }}
-                          className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+                          className={`h-11 px-3 sm:px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all duration-200 cursor-pointer active:scale-95 select-none ${
                             resolvingEpisodeNum === ep.episodeNumber
-                              ? 'bg-[#E50914]/20 border-[#E50914]/40 text-[#E50914]'
+                              ? 'bg-[#E50914]/25 border-[#E50914] text-[#E50914] animate-pulse ring-2 ring-[#E50914]/30'
                               : epTask?.status === 'COMPLETED'
-                              ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                              ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/30'
                               : epTask?.status === 'DOWNLOADING'
-                              ? 'bg-[#E50914]/20 border-[#E50914]/40 text-[#E50914]'
+                              ? 'bg-[#E50914]/25 border-[#E50914] text-[#E50914] hover:bg-[#E50914]/35'
                               : epTask?.status === 'PAUSED'
-                              ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
-                              : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
+                              ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 hover:bg-amber-500/30'
+                              : 'bg-[#1C1C1E] border-white/15 text-white/90 hover:text-white hover:bg-[#28282B] hover:border-white/25 active:bg-[#141416]'
                           }`}
+                          title={isRTL ? `تحميل الحلقة ${ep.episodeNumber}` : `Download Episode ${ep.episodeNumber}`}
                         >
                           {resolvingEpisodeNum === ep.episodeNumber ? (
-                            <div className="w-4 h-4 border-2 border-[#E50914] border-t-transparent rounded-full animate-spin" />
+                            <>
+                              <div className="w-4 h-4 border-2 border-[#E50914] border-t-transparent rounded-full animate-spin" />
+                              <span className="hidden sm:inline font-semibold text-[11px]">{isRTL ? 'جاري التجهيز...' : 'Preparing...'}</span>
+                            </>
                           ) : epTask?.status === 'COMPLETED' ? (
-                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                            <>
+                              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                              <span className="hidden sm:inline text-[11px]">{isRTL ? 'تم التحميل' : 'Downloaded'}</span>
+                            </>
                           ) : epTask?.status === 'DOWNLOADING' ? (
-                            <Pause className="w-3.5 h-3.5 animate-pulse" />
+                            <>
+                              <Pause className="w-4 h-4 animate-pulse" />
+                              <span className="text-xs">{epTask.progress}%</span>
+                            </>
+                          ) : epTask?.status === 'PAUSED' ? (
+                            <>
+                              <Play className="w-4 h-4 fill-amber-300" />
+                              <span className="hidden sm:inline text-[11px]">{isRTL ? 'استئناف' : 'Resume'}</span>
+                            </>
                           ) : (
-                            <Download className="w-4 h-4" />
+                            <>
+                              <Download className="w-5 h-5 text-[#E50914] shrink-0" />
+                              <span className="font-semibold text-xs">{isRTL ? 'تحميل' : 'Download'}</span>
+                            </>
                           )}
                         </button>
                       </div>
