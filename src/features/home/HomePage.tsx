@@ -302,30 +302,48 @@ export const HomePage: React.FC = () => {
     return [
       {
         id: 'cw1',
-        title: 'MobLand - S2 E4',
+        title: 'Vikings: Valhalla',
         subtitle: 'S02:E04 • 32m remaining',
         type: 'tv' as const,
         streamUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-        poster: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80',
+        poster: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80',
         progress: 75,
       },
       {
         id: 'cw2',
-        title: 'Ebenezer',
+        title: 'Breaking Silence',
         subtitle: '1080p • 45m remaining',
         type: 'movie' as const,
         streamUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-        poster: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=500&q=80',
+        poster: 'https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?auto=format&fit=crop&w=600&q=80',
         progress: 60,
       },
       {
         id: 'cw3',
-        title: 'DEAD-END JOB',
+        title: 'Fallen Kingdom',
         subtitle: 'S01:E01 • 18m remaining',
         type: 'tv' as const,
         streamUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-        poster: 'https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?auto=format&fit=crop&w=500&q=80',
+        poster: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80',
         progress: 88,
+      },
+      {
+        id: 'cw4',
+        title: 'Cyber Protocol',
+        subtitle: '1080p • 12m remaining',
+        type: 'movie' as const,
+        streamUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        poster: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=600&q=80',
+        progress: 45,
+      },
+      {
+        id: 'cw5',
+        title: 'Shadow Agent',
+        subtitle: 'S03:E02 • 50m remaining',
+        type: 'tv' as const,
+        streamUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        poster: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=600&q=80',
+        progress: 30,
       },
     ];
   }, [watchHistory]);
@@ -370,7 +388,7 @@ export const HomePage: React.FC = () => {
     ];
   }, [movies, latestMovies]);
 
-  // Curated Featured Slider Items (matching Netflix Mobile Full-Bleed Hero Banner)
+  // Curated Featured Slider Items (matching Netflix / Nxsha Mobile Full-Bleed Hero Banner)
   const featuredItems = useMemo(() => {
     const list: Array<{
       id: string;
@@ -378,23 +396,54 @@ export const HomePage: React.FC = () => {
       type: 'movie' | 'tv';
       badge: string;
       badgeAr: string;
+      filmType: string;
+      filmTypeAr: string;
       genres: string;
       genresAr: string;
+      rating: string;
+      quality: string;
+      tagline: string;
+      taglineAr: string;
       backdrop: string;
       mediaItem: VidApiMovie | VidApiTvShow | null;
     }> = [];
 
-    // 1. Featured Series (e.g. The Day of the Jackal)
+    // 1. Primary Feature: THE ODYSSEY (matching the exact screenshot)
+    list.push({
+      id: 'hero-odyssey',
+      title: 'THE ODYSSEY',
+      type: 'movie',
+      badge: 'PULSAR EXCLUSIVE',
+      badgeAr: 'حصري لـ PULSAR',
+      filmType: 'A PULSAR FILM',
+      filmTypeAr: 'فيلم أصلي من PULSAR',
+      genres: 'Action & Adventure',
+      genresAr: 'أكشن ومغامرات',
+      rating: '8.8',
+      quality: '4K UHD',
+      tagline: 'An epic journey beyond the limits...',
+      taglineAr: 'رحلة ملحمية تتجاوز الحدود...',
+      backdrop: '/art/odyssey-clean-backdrop.jpg',
+      mediaItem: actionMovies.length > 0 ? actionMovies[0] : null,
+    });
+
+    // 2. Featured Series (e.g. The Day of the Jackal)
     if (tvShows.length > 0) {
       const t0 = tvShows[0];
       list.push({
         id: `hero-tv-${t0.tmdb_id}`,
         title: (t0.title || 'THE DAY OF THE JACKAL').toUpperCase(),
         type: 'tv',
-        badge: 'A PULSAR SERIES',
-        badgeAr: 'مسلسل أصلي من PULSAR',
-        genres: formatGenresBullet(t0.genre, 'Thriller • Mystery • Espionage • High Stakes'),
-        genresAr: 'إثارة • غموض • جاسوسية • تشويق عالي',
+        badge: 'PULSAR EXCLUSIVE',
+        badgeAr: 'حصري لـ PULSAR',
+        filmType: 'A PULSAR SERIES',
+        filmTypeAr: 'مسلسل أصلي من PULSAR',
+        genres: formatGenresBullet(t0.genre, 'Thriller • Mystery • Espionage'),
+        genresAr: 'إثارة • غموض • تشويق',
+        rating: '8.9',
+        quality: '4K UHD',
+        tagline: 'A thrilling cat-and-mouse manhunt across Europe...',
+        taglineAr: 'مطاردة ملحمية تحبس الأنفاس عبر أوروبا...',
         backdrop:
           t0.backdrop_url ||
           t0.poster_url ||
@@ -403,17 +452,23 @@ export const HomePage: React.FC = () => {
       });
     }
 
-    // 2. Featured Film (e.g. Outlaw King / Sicario)
+    // 3. Featured Film (e.g. Outlaw King)
     if (movies.length > 0) {
       const m0 = movies[0];
       list.push({
         id: `hero-m-${m0.tmdb_id}`,
         title: (m0.title || 'OUTLAW KING').toUpperCase(),
         type: 'movie',
-        badge: 'A PULSAR FILM',
-        badgeAr: 'فيلم أصلي من PULSAR',
-        genres: formatGenresBullet(m0.genre, 'Middle Ages • Royalty • War • Rousing • Period Piece'),
-        genresAr: 'تاريخي • حروب • ملحمي • إثارة • دراما',
+        badge: 'PULSAR EXCLUSIVE',
+        badgeAr: 'حصري لـ PULSAR',
+        filmType: 'A PULSAR FILM',
+        filmTypeAr: 'فيلم أصلي من PULSAR',
+        genres: formatGenresBullet(m0.genre, 'Historical • Action • Drama'),
+        genresAr: 'تاريخي • حروب • ملحمي',
+        rating: '8.6',
+        quality: '4K UHD',
+        tagline: 'The battle for a crown and freedom began in blood...',
+        taglineAr: 'معركة الحرية والتاج تبدأ وسط الحصار...',
         backdrop:
           m0.backdrop_url ||
           m0.poster_url ||
@@ -422,86 +477,28 @@ export const HomePage: React.FC = () => {
       });
     }
 
-    // 3. Featured Cinema Release
+    // 4. Featured Cinema Release
     if (latestMovies.length > 0) {
       const m1 = latestMovies[0];
       list.push({
         id: `hero-lat-${m1.tmdb_id}`,
         title: (m1.title || 'CAMPUS DRIVERS').toUpperCase(),
         type: 'movie',
-        badge: 'A PULSAR FILM',
-        badgeAr: 'فيلم سينمائي جديد',
-        genres: formatGenresBullet(m1.genre, 'Drama • Romance • Youth • High Energy'),
-        genresAr: 'دراما • شبابي • سرعة • رومانسي',
+        badge: 'PULSAR EXCLUSIVE',
+        badgeAr: 'حصري لـ PULSAR',
+        filmType: 'A PULSAR FILM',
+        filmTypeAr: 'فيلم أصلي من PULSAR',
+        genres: formatGenresBullet(m1.genre, 'Drama • Romance • Youth'),
+        genresAr: 'دراما • شبابي • إثارة',
+        rating: '8.4',
+        quality: '1080P',
+        tagline: 'Speed, adrenaline and rivalries on the street...',
+        taglineAr: 'السرعة والإثارة والمنافسة في شوارع المدينة...',
         backdrop:
           m1.backdrop_url ||
           m1.poster_url ||
           'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=1200&q=85',
         mediaItem: m1,
-      });
-    }
-
-    // 4. Featured Secondary Series
-    if (tvShows.length > 1) {
-      const t1 = tvShows[1];
-      list.push({
-        id: `hero-tv2-${t1.tmdb_id}`,
-        title: (t1.title || 'MOBLAND').toUpperCase(),
-        type: 'tv',
-        badge: 'A PULSAR SERIES',
-        badgeAr: 'مسلسل أصلي من PULSAR',
-        genres: formatGenresBullet(t1.genre, 'Crime • Mafia • Suspense • Dark'),
-        genresAr: 'جريمة • مافيا • دراما مظلمة • تشويق',
-        backdrop:
-          t1.backdrop_url ||
-          t1.poster_url ||
-          'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1200&q=85',
-        mediaItem: t1,
-      });
-    }
-
-    // 5. Featured Action Adventure
-    if (actionMovies.length > 0) {
-      const a0 = actionMovies[0];
-      list.push({
-        id: `hero-act-${a0.tmdb_id}`,
-        title: (a0.title || 'THE ODYSSEY').toUpperCase(),
-        type: 'movie',
-        badge: 'A PULSAR FILM',
-        badgeAr: 'فيلم أصلي من PULSAR',
-        genres: formatGenresBullet(a0.genre, 'Action • Sci-Fi • Adventure • Blockbuster'),
-        genresAr: 'أكشن • خيال علمي • مغامرات • إنتاج ضخم',
-        backdrop:
-          a0.backdrop_url ||
-          a0.poster_url ||
-          'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=85',
-        mediaItem: a0,
-      });
-    }
-
-    // Static fallback items if API is empty or offline
-    if (list.length === 0) {
-      list.push({
-        id: 'hero-outlaw',
-        title: 'OUTLAW KING',
-        type: 'movie',
-        badge: 'A PULSAR FILM',
-        badgeAr: 'فيلم أصلي من PULSAR',
-        genres: 'Middle Ages • Royalty • War • Rousing • Period Piece',
-        genresAr: 'تاريخي • حروب • ملحمي • إثارة • دراما',
-        backdrop: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1200&q=85',
-        mediaItem: null,
-      });
-      list.push({
-        id: 'hero-jackal',
-        title: 'THE DAY OF THE JACKAL',
-        type: 'tv',
-        badge: 'A PULSAR SERIES',
-        badgeAr: 'مسلسل أصلي من PULSAR',
-        genres: 'Thriller • Mystery • Espionage • Intense',
-        genresAr: 'إثارة • غموض • جاسوسية • تشويق عالي',
-        backdrop: 'https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?auto=format&fit=crop&w=1200&q=85',
-        mediaItem: null,
       });
     }
 
@@ -511,12 +508,12 @@ export const HomePage: React.FC = () => {
   // Touch Swipe & Slider Controls
   const touchStartXRef = useRef<number | null>(null);
 
-  // Auto-advance hero slides every 7 seconds
+  // Auto-advance hero slides every 18 seconds
   useEffect(() => {
     if (featuredItems.length <= 1) return;
     const interval = setInterval(() => {
       setActiveHeroIdx((prev) => (prev + 1) % featuredItems.length);
-    }, 7000);
+    }, 18000);
     return () => clearInterval(interval);
   }, [featuredItems.length]);
 
@@ -634,17 +631,17 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[#0B0B0B] text-white pb-32 pt-1 select-none" dir={isRTL ? 'rtl' : 'ltr'}>
-      <div className="w-full max-w-[1920px] mx-auto px-2 md:px-8">
-        {/* 1. Integrated Search & Category Quick Filters */}
-        <div className="px-2 md:px-4 pt-1 pb-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 z-20 relative">
+    <div className="w-full min-w-0 pb-32 select-none" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="w-full min-w-0 mx-auto">
+        {/* 1. Integrated Search & Category Quick Filters (Exact match to screenshot) */}
+        <div className="pt-1 pb-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 z-20 relative">
           <div
             onClick={() => setIsSearchOpen(true)}
-            className="flex-1 max-w-xl bg-[#1C1C1E]/90 backdrop-blur-md border border-white/10 rounded-xl px-4 py-2.5 flex items-center gap-2.5 cursor-pointer hover:border-white/20 transition-all active:scale-[0.99] shadow-lg"
+            className="w-full md:w-[420px] lg:w-[460px] bg-[#121214] border border-white/10 rounded-2xl px-4 py-2.5 flex items-center gap-2.5 cursor-pointer hover:border-white/20 transition-all active:scale-[0.99] shadow-md"
           >
             <Search className="w-4 h-4 text-neutral-400" />
-            <span className="text-xs text-neutral-400 font-medium">
-              {isRTL ? 'ابحث عن الأفلام والمسلسلات والرياضة...' : 'Search movies, series, live sports...'}
+            <span className="text-xs text-neutral-400 font-normal">
+              {isRTL ? 'ابحث عن الأفلام والمسلسلات والرياضة...' : 'Search for movies, series, live sports...'}
             </span>
           </div>
 
@@ -656,33 +653,22 @@ export const HomePage: React.FC = () => {
               { label: isRTL ? '📺 القنوات' : '📺 Channels', action: () => setCurrentTab('channels') },
               { label: isRTL ? '🎬 الأفلام' : '🎬 Movies', action: () => setCurrentTab('movies') },
               { label: isRTL ? '📊 النتائج والتحليلات' : '📊 Scores & Analytics', action: () => setCurrentTab('scores') },
-              { label: isRTL ? '⭐ توب 10' : '⭐ Top 10', action: () => setCurrentTab('movies') },
             ].map((chip, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={chip.action}
-                className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#1C1C1E] border border-white/10 text-neutral-300 hover:text-white hover:border-[#E50914] hover:bg-[#E50914]/15 transition-all whitespace-nowrap active:scale-95 cursor-pointer"
+                className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#18181A] border border-white/10 text-neutral-300 hover:text-white hover:border-[#E50914] hover:bg-[#E50914]/15 transition-all whitespace-nowrap active:scale-95 cursor-pointer shadow-sm"
               >
                 {chip.label}
               </button>
             ))}
           </div>
-
-          <button
-            type="button"
-            onClick={() => setCurrentTab('settings')}
-            className="hidden md:flex relative w-10 h-10 rounded-xl bg-gradient-to-br from-[#E50914] to-red-950 items-center justify-center font-black text-xs border border-white/15 cursor-pointer text-white shadow-lg active:scale-95 shrink-0"
-            title="Profile / Settings"
-          >
-            YA
-            <span className="w-2.5 h-2.5 rounded-full bg-[#E50914] ring-2 ring-[#0B0B0B] absolute -top-0.5 -right-0.5" />
-          </button>
         </div>
 
-        {/* 2. Full-Bleed Modern Hero Carousel (Matching nxsha.space architecture with TV Pulsar Identity) */}
+        {/* 2. Full-Bleed Modern Hero Carousel (Left-Aligned Layout matching Screenshot) */}
         <div
-          className="relative w-full h-[65vh] min-h-[500px] max-h-[640px] sm:h-[72vh] rounded-3xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.85)] overflow-hidden select-none mb-10 touch-pan-y group"
+          className="relative w-full h-[470px] sm:h-[490px] md:h-[510px] rounded-3xl border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.95)] overflow-hidden select-none mb-8 touch-pan-y group"
           onTouchStart={handleHeroTouchStart}
           onTouchEnd={handleHeroTouchEnd}
         >
@@ -690,20 +676,20 @@ export const HomePage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveHeroIdx((prev) => (prev - 1 + featuredItems.length) % featuredItems.length)}
-            className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/45 hover:bg-[#E50914] text-white border border-white/15 backdrop-blur-md items-center justify-center transition-all cursor-pointer shadow-2xl active:scale-95 group-hover:opacity-100 opacity-70"
+            className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-black/60 hover:bg-[#E50914] text-white border border-white/15 backdrop-blur-md items-center justify-center transition-all cursor-pointer shadow-xl active:scale-90 group-hover:opacity-100 opacity-80"
             aria-label="Previous slide"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5" />
           </button>
 
           {/* Floating Next Button (Right) */}
           <button
             type="button"
             onClick={() => setActiveHeroIdx((prev) => (prev + 1) % featuredItems.length)}
-            className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/45 hover:bg-[#E50914] text-white border border-white/15 backdrop-blur-md items-center justify-center transition-all cursor-pointer shadow-2xl active:scale-95 group-hover:opacity-100 opacity-70"
+            className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-black/60 hover:bg-[#E50914] text-white border border-white/15 backdrop-blur-md items-center justify-center transition-all cursor-pointer shadow-xl active:scale-90 group-hover:opacity-100 opacity-80"
             aria-label="Next slide"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-5 h-5" />
           </button>
 
           {/* Background Poster Images with Smooth Fade Transition */}
@@ -717,68 +703,73 @@ export const HomePage: React.FC = () => {
               <img
                 src={item.backdrop}
                 alt={item.title}
-                className="w-full h-full object-cover object-center brightness-90 filter ken-burns"
+                className="w-full h-full object-cover object-right-top brightness-95 filter"
               />
             </div>
           ))}
 
-          {/* Cinematic Overlays: Top Vignette + Bottom Rich Gradient + Subtle Side Vignette */}
-          <div className="absolute inset-0 z-10 bg-gradient-to-b from-[#0B0B0B]/85 via-transparent to-transparent pointer-events-none" />
-          <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#0B0B0B] via-[#0B0B0B]/85 via-50% to-transparent pointer-events-none" />
-          <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#0B0B0B]/70 via-transparent to-[#0B0B0B]/70 pointer-events-none hidden md:block" />
+          {/* Cinematic Overlays: Left rich dark gradient + bottom vignette */}
+          <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#0B0B0B] via-[#0B0B0B]/85 via-50% to-transparent pointer-events-none" />
+          <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#0B0B0B] via-transparent to-transparent pointer-events-none" />
 
-          {/* Top Center PULSAR Brand Mark */}
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 pointer-events-none bg-black/40 backdrop-blur-md px-3.5 py-1 rounded-full border border-white/10">
-            <span className="w-2 h-2 rounded-full bg-[#E50914] animate-ping" />
-            <span className="font-black text-xs sm:text-sm tracking-widest text-[#E50914] drop-shadow-md">
-              PULSAR EXCLUSIVE
-            </span>
-          </div>
-
-          {/* Lower Hero Content: Category Badge + Large Bold Title + Metadata + 3-Button Action Row */}
-          <div className="absolute bottom-6 left-0 right-0 z-20 flex flex-col items-center text-center px-4">
-            {/* Category Badge & Star Rating Capsule */}
-            <div className="flex items-center justify-center flex-wrap gap-2 mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-white/95 bg-[#E50914]/25 border border-[#E50914]/40 px-3 py-0.5 rounded-full drop-shadow">
+          {/* Left-Aligned Hero Content Block (Matching Screenshot) */}
+          <div className="absolute inset-y-0 left-0 z-20 flex flex-col justify-center pl-8 sm:pl-12 md:pl-16 pr-4 max-w-xl text-left">
+            {/* Tagline Capsule: 🔴 PULSAR EXCLUSIVE */}
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-[#FF4D5E] bg-[#E50914]/20 border border-[#E50914]/40 px-3 py-0.5 rounded-full shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-[#E50914]" />
                 {isRTL ? currentHero.badgeAr : currentHero.badge}
-              </span>
-              <span className="flex items-center gap-1 text-[11px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                8.8
-              </span>
-              <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded">
-                4K UHD
               </span>
             </div>
 
-            {/* Title */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] max-w-2xl leading-tight px-2">
+            {/* A PULSAR FILM */}
+            <p className="text-xs font-black uppercase tracking-[0.25em] text-neutral-300 mt-2">
+              {isRTL ? currentHero.filmTypeAr : currentHero.filmType}
+            </p>
+
+            {/* THE ODYSSEY */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white leading-tight mt-1 drop-shadow-lg">
               {currentHero.title}
             </h1>
 
-            {/* Bulleted Descriptors / Genres */}
-            <p className="mt-2 text-[11px] sm:text-xs text-white/80 font-medium tracking-wide flex items-center justify-center flex-wrap gap-1.5 drop-shadow px-4 max-w-lg">
+            {/* Action & Adventure */}
+            <p className="text-sm font-semibold text-neutral-300 mt-2">
               {isRTL ? currentHero.genresAr : currentHero.genres}
             </p>
 
-            {/* 3-Action Control Row */}
-            <div className="mt-5 flex items-center justify-center gap-3 sm:gap-4 w-full max-w-md">
-              {/* 1. Primary Action: Red Play Button */}
+            {/* ★ 8.8  4K UHD */}
+            <div className="flex items-center gap-2 mt-2.5">
+              <span className="inline-flex items-center gap-1 text-xs font-black text-white bg-[#E50914] px-2.5 py-0.5 rounded-md shadow-sm">
+                <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                {currentHero.rating || '8.8'}
+              </span>
+              <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 rounded-md">
+                {currentHero.quality || '4K UHD'}
+              </span>
+            </div>
+
+            {/* An epic journey beyond the limits... */}
+            <p className="text-xs sm:text-sm text-neutral-300 font-normal mt-3 max-w-lg leading-relaxed line-clamp-2">
+              {isRTL ? currentHero.taglineAr : currentHero.tagline}
+            </p>
+
+            {/* 3 Action Buttons */}
+            <div className="mt-5 flex items-center gap-3 sm:gap-3.5 flex-wrap">
+              {/* 1. Watch Now Button */}
               <button
                 type="button"
                 onClick={() => handlePlayHero(currentHero)}
-                className="bg-[#E50914] hover:bg-red-700 text-white font-extrabold text-sm sm:text-base px-7 sm:px-9 py-2.5 sm:py-3 rounded-full flex items-center justify-center gap-2.5 shadow-[0_4px_25px_rgba(229,9,20,0.55)] active:scale-95 transition-all cursor-pointer"
+                className="bg-[#E50914] hover:bg-red-700 text-white font-extrabold text-sm px-7 py-2.5 rounded-full flex items-center justify-center gap-2 shadow-[0_4px_25px_rgba(229,9,20,0.55)] active:scale-95 transition-all cursor-pointer"
               >
                 <Play className="w-4 h-4 fill-white text-white" />
                 <span>{isRTL ? 'تشغيل الآن' : 'Watch Now'}</span>
               </button>
 
-              {/* 2. Secondary Action: + My List */}
+              {/* 2. + My List Button */}
               <button
                 type="button"
                 onClick={() => toggleFavorite(currentHero.id)}
-                className="bg-[#1C1C1E]/80 hover:bg-[#2C2C2E] border border-white/15 text-white font-semibold text-xs sm:text-sm px-4 sm:px-5 py-2.5 sm:py-3 rounded-full flex items-center justify-center gap-1.5 backdrop-blur-md active:scale-95 transition-all cursor-pointer"
-                title="My List"
+                className="bg-[#1C1C1E]/90 hover:bg-[#2C2C2E] border border-white/20 text-white font-semibold text-xs sm:text-sm px-4 sm:px-5 py-2.5 rounded-full flex items-center justify-center gap-1.5 backdrop-blur-md active:scale-95 transition-all cursor-pointer"
               >
                 {isHeroInMyList ? (
                   <>
@@ -793,44 +784,98 @@ export const HomePage: React.FC = () => {
                 )}
               </button>
 
-              {/* 3. Third Action: ⓘ Details */}
+              {/* 3. ⓘ Details Button */}
               <button
                 type="button"
                 onClick={() => handleInfoHero(currentHero)}
-                className="bg-[#1C1C1E]/80 hover:bg-[#2C2C2E] border border-white/15 text-white font-semibold text-xs sm:text-sm px-4 sm:px-5 py-2.5 sm:py-3 rounded-full flex items-center justify-center gap-1.5 backdrop-blur-md active:scale-95 transition-all cursor-pointer"
-                title="Details"
+                className="bg-[#1C1C1E]/90 hover:bg-[#2C2C2E] border border-white/20 text-white font-semibold text-xs sm:text-sm px-4 sm:px-5 py-2.5 rounded-full flex items-center justify-center gap-1.5 backdrop-blur-md active:scale-95 transition-all cursor-pointer"
               >
                 <Info className="w-4 h-4 text-white" />
                 <span>{isRTL ? 'تفاصيل' : 'Details'}</span>
               </button>
             </div>
+          </div>
 
-            {/* Slider Dots Indicator */}
-            <div className="flex items-center justify-center gap-1.5 mt-5">
-              {featuredItems.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setActiveHeroIdx(i)}
-                  className={`transition-all duration-300 rounded-full cursor-pointer ${
-                    activeHeroIdx % featuredItems.length === i
-                      ? 'w-6 h-1.5 bg-[#E50914]'
-                      : 'w-2 h-1.5 bg-white/30 hover:bg-white/50'
-                  }`}
-                  aria-label={`Slide ${i + 1}`}
-                />
-              ))}
-            </div>
+          {/* Slider Dots Indicator Centered at Bottom */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5">
+            {featuredItems.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActiveHeroIdx(i)}
+                className={`transition-all duration-300 rounded-full cursor-pointer ${
+                  activeHeroIdx % featuredItems.length === i
+                    ? 'w-6 h-1.5 bg-[#E50914]'
+                    : 'w-1.5 h-1.5 bg-white/30 hover:bg-white/50'
+                }`}
+                aria-label={`Slide ${i + 1}`}
+              />
+            ))}
           </div>
         </div>
 
-        {/* 3. Live Sports & Channels Stories Circles */}
+        {/* 3. Continue Watching (Rail 1 directly below Hero, matching screenshot) */}
+        {continueWatchingList.length > 0 && (
+          <div className="px-4 mb-8">
+            <div className="flex items-center gap-2.5 mb-3.5">
+              <div className="w-1.5 h-5 rounded-full bg-[#E50914]" />
+              <Film className="w-4 h-4 text-white" />
+              <h3 className="text-base sm:text-lg font-bold tracking-tight text-white">
+                {isRTL ? 'متابعة المشاهدة' : 'Continue Watching'}
+              </h3>
+            </div>
+            <div className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory -mx-4 px-4 pb-2">
+              {continueWatchingList.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => {
+                    setActiveMedia({
+                      id: item.id,
+                      title: item.title,
+                      subtitle: item.subtitle,
+                      type: item.type,
+                      streamUrl: item.streamUrl,
+                      poster: item.poster,
+                      isLive: false,
+                    });
+                  }}
+                  className="w-[190px] sm:w-[230px] md:w-[250px] shrink-0 snap-start cursor-pointer group select-none"
+                >
+                  <div className="relative aspect-video rounded-xl overflow-hidden bg-[#161618] border border-white/10 group-hover:border-white/30 shadow-lg transition-all duration-300">
+                    <img
+                      src={item.poster}
+                      alt={item.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/25 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="w-9 h-9 rounded-full bg-black/60 border border-white/40 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                        <Play className="w-3.5 h-3.5 fill-white ml-0.5" />
+                      </div>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                      <div
+                        className="h-full bg-[#E50914] shadow-[0_0_4px_#E50914]"
+                        style={{ width: `${(item as any).progress || 60}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 4. Live Sports & Channels Stories Circles (Rail 2 directly below Continue Watching, matching screenshot) */}
         <div className="px-4 mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm md:text-base font-bold tracking-tight text-white flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#E50914] animate-pulse" />
-              {isRTL ? 'القنوات الرياضية المباشرة' : 'Live Sports & Channels'}
-            </h3>
+          <div className="flex items-center justify-between mb-3.5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-1.5 h-5 rounded-full bg-[#E50914]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#E50914] animate-pulse" />
+              <h3 className="text-base sm:text-lg font-bold tracking-tight text-white">
+                {isRTL ? 'القنوات الرياضية المباشرة' : 'Live Sports & Channels'}
+              </h3>
+            </div>
             <button
               type="button"
               onClick={() => setCurrentTab('channels')}
@@ -843,18 +888,20 @@ export const HomePage: React.FC = () => {
 
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 scroll-smooth">
             {(channels && channels.length > 0
-              ? channels.slice(0, 20)
+              ? channels.slice(0, 24)
               : [
-                  { id: 'c-bein', name: 'beIN Sports 1', resolvedLogo: '/logos/bein-sports-1.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-bein2', name: 'beIN Sports 2', resolvedLogo: '/logos/bein-sports-2.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-bein3', name: 'beIN Sports 3', resolvedLogo: '/logos/bein-sports-3.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-sky', name: 'Sky Sports', resolvedLogo: '/logos/sky-sports-main-event-uk.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-canal', name: 'CANAL+ Sport', resolvedLogo: '/logos/canal-plus-sport-5-afrique-fr.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-dazn', name: 'DAZN 1', resolvedLogo: '/logos/dazn-1-es.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-espn', name: 'ESPN', resolvedLogo: '/logos/espnu-us.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-alkass', name: 'Alkass', resolvedLogo: '/logos/alkass.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-eurosport', name: 'Eurosport 1', resolvedLogo: '/logos/eurosport-1-de.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-watania', name: 'Watania 1', resolvedLogo: '/logos/watania-1.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein', name: 'beIN SPORTS ...', resolvedLogo: '/logos/bein-sports-1.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein1', name: 'beIN SPORTS 1', resolvedLogo: '/logos/bein-sports-1.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein2', name: 'beIN SPORTS 2', resolvedLogo: '/logos/bein-sports-2.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein3', name: 'beIN SPORTS 3', resolvedLogo: '/logos/bein-sports-3.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein4', name: 'beIN SPORTS 4', resolvedLogo: '/logos/bein-sports-4.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein6', name: 'beIN SPORTS 6', resolvedLogo: '/logos/bein-sports-6.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein7', name: 'beIN SPORTS 7', resolvedLogo: '/logos/bein-sports-7.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein8', name: 'beIN SPORTS 8', resolvedLogo: '/logos/bein-sports-8.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-euro7', name: 'beIN SPORTS 7', resolvedLogo: '/logos/eurosport-1-de.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-euro9', name: 'beIN SPORTS 9', resolvedLogo: '/logos/eurosport-2-de.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-jazeera', name: 'Al Jazeera', resolvedLogo: '/logos/france-24-fr.png', src: 'https://wideiptv.top/player/beINAR', category: 'News' },
+                  { id: 'c-mosaique', name: 'Mosaique FM', resolvedLogo: '/logos/mosaique-fm.png', src: 'https://wideiptv.top/player/beINAR', category: 'Radio' },
                 ]
             ).map((ch) => (
               <div
@@ -862,8 +909,8 @@ export const HomePage: React.FC = () => {
                 onClick={() => handlePlayChannel(ch as ChannelItem)}
                 className="cursor-pointer group flex flex-col items-center select-none shrink-0"
               >
-                <div className="relative w-16 h-16 md:w-18 md:h-18 rounded-full p-[2px] bg-gradient-to-tr from-[#E50914] via-red-600 to-purple-600 mb-2 group-hover:scale-105 group-hover:shadow-[0_0_15px_rgba(229,9,20,0.5)] transition-all duration-200">
-                  <div className="w-full h-full rounded-full bg-[#1C1C1E] border border-white/10 flex items-center justify-center overflow-hidden p-2">
+                <div className="relative w-16 h-16 md:w-18 md:h-18 rounded-full p-[2px] bg-gradient-to-tr from-purple-600 via-pink-600 to-red-600 mb-2 group-hover:scale-105 group-hover:shadow-[0_0_15px_rgba(229,9,20,0.5)] transition-all duration-200">
+                  <div className="w-full h-full rounded-full bg-[#141416] border border-white/10 flex items-center justify-center overflow-hidden p-2">
                     {ch.resolvedLogo ? (
                       <img src={ch.resolvedLogo} alt={ch.name} className="w-full h-full object-contain" />
                     ) : (
@@ -1004,56 +1051,7 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Rail 5: Continue Watching */}
-        {continueWatchingList.length > 0 && (
-          <div className="px-4 mb-6">
-            <h3 className="text-sm font-bold tracking-tight text-white mb-2.5">
-              {isRTL ? 'متابعة المشاهدة' : 'Continue Watching'}
-            </h3>
-            <div className="flex gap-3 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory -mx-4 px-4 pb-2">
-              {continueWatchingList.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => {
-                    setActiveMedia({
-                      id: item.id,
-                      title: item.title,
-                      subtitle: item.subtitle,
-                      type: item.type,
-                      streamUrl: item.streamUrl,
-                      poster: item.poster,
-                      isLive: false,
-                    });
-                  }}
-                  className="w-[160px] sm:w-[220px] shrink-0 snap-start cursor-pointer group select-none"
-                >
-                  <div className="relative aspect-video rounded-xl overflow-hidden bg-[#1C1C1E] border border-white/10 group-hover:border-white/25 transition-all duration-300">
-                    <img
-                      src={item.poster}
-                      alt={item.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                    />
-                    <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
-                      <div className="w-8 h-8 rounded-full bg-black/60 border border-white/40 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Play className="w-3.5 h-3.5 fill-white ml-0.5" />
-                      </div>
-                    </div>
-                    <span className="absolute bottom-2 left-2 text-[9px] font-black bg-yellow-400 text-black px-1.5 py-0.2 rounded shadow truncate max-w-[130px]">
-                      {item.title}
-                    </span>
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
-                      <div
-                        className="h-full bg-[#E50914] shadow-[0_0_4px_#E50914]"
-                        style={{ width: `${(item as any).progress || 60}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+
 
         {/* Rail 6: Featured TV Series */}
         {tvShows.length > 0 && (
@@ -1207,6 +1205,6 @@ export const HomePage: React.FC = () => {
           )}
         </div>
       </div>
-    </main>
+    </div>
   );
 };
