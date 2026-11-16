@@ -24,6 +24,12 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('[Pulsar ErrorBoundary caught an exception]:', error, errorInfo);
   }
 
+  public componentDidUpdate(prevProps: Props) {
+    if (prevProps.children !== this.props.children && this.state.hasError) {
+      this.setState({ hasError: false, error: undefined });
+    }
+  }
+
   public render() {
     if (this.state.hasError) {
       return (

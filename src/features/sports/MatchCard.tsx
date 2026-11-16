@@ -46,6 +46,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className =
   const colorRight = getTeamColor(match.team2?.name, true);
   const leagueBadge = resolveLeagueBadge(match.league, match.category);
 
+  // Network badge (e.g. beIN SPORTS, Sky Sports)
+  const networkName = match.servers?.[0]?.name || match.category?.toUpperCase() || 'LIVE';
+
   return (
     <div
       onClick={() => onPlay(match)}
@@ -68,16 +71,15 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className =
           : { width: '260px', minWidth: '240px', maxWidth: '300px' }),
       }}
     >
-      {/* 1. Main 16:9 Banner Card (Matching Screenshot 2 benchmark) */}
-      <div className="relative w-full aspect-[16/9.5] rounded-2xl overflow-hidden bg-[#0c0d15] border border-white/10 group-hover:border-white/30 transition-all duration-300 group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.85)] group-hover:-translate-y-1 active:scale-97">
+      {/* 1. Main 16:9 Banner Card */}
+      <div className="relative w-full aspect-[16/9] rounded-[14px] overflow-hidden bg-[#131620] border border-white/8 group-hover:border-white/25 transition-all duration-300 group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.85)] group-hover:-translate-y-1 active:scale-97">
         {hasTwoTeams ? (
-          /* Split Team Gradient Background with Team Crests & Center League Badge (Strictly LTR: Team 1 Left, Team 2 Right) */
           <div className="absolute inset-0 flex" dir="ltr">
-            {/* Left Team Half (Team 1) */}
+            {/* Left Team Half */}
             <div
               className="w-1/2 h-full flex items-center justify-center p-2.5 sm:p-4 relative"
               style={{
-                background: `radial-gradient(circle at 35% 50%, ${colorLeft} 0%, #06070d 100%)`,
+                background: `radial-gradient(circle at 35% 50%, ${colorLeft} 0%, #090A0F 100%)`,
               }}
             >
               {match.team1?.logo && !team1Error ? (
@@ -85,21 +87,24 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className =
                   src={match.team1.logo}
                   alt={match.team1.name}
                   loading="lazy"
-                  onError={() => setTeam1Error(true)}
-                  className="w-10 h-10 sm:w-14 sm:h-14 object-contain filter drop-shadow-[0_6px_14px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = 'none';
+                    setTeam1Error(true);
+                  }}
+                  className="w-10 h-10 sm:w-13 sm:h-13 object-contain filter drop-shadow-[0_6px_14px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-center text-xs sm:text-sm font-black text-white/90 shadow-md">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-xs sm:text-sm font-black text-white/90 shadow-md">
                   {getInitials(match.team1?.name)}
                 </div>
               )}
             </div>
 
-            {/* Right Team Half (Team 2) */}
+            {/* Right Team Half */}
             <div
               className="w-1/2 h-full flex items-center justify-center p-2.5 sm:p-4 relative"
               style={{
-                background: `radial-gradient(circle at 65% 50%, ${colorRight} 0%, #06070d 100%)`,
+                background: `radial-gradient(circle at 65% 50%, ${colorRight} 0%, #090A0F 100%)`,
               }}
             >
               {match.team2?.logo && !team2Error ? (
@@ -107,11 +112,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className =
                   src={match.team2.logo}
                   alt={match.team2.name}
                   loading="lazy"
-                  onError={() => setTeam2Error(true)}
-                  className="w-10 h-10 sm:w-14 sm:h-14 object-contain filter drop-shadow-[0_6px_14px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = 'none';
+                    setTeam2Error(true);
+                  }}
+                  className="w-10 h-10 sm:w-13 sm:h-13 object-contain filter drop-shadow-[0_6px_14px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-center text-xs sm:text-sm font-black text-white/90 shadow-md">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-xs sm:text-sm font-black text-white/90 shadow-md">
                   {getInitials(match.team2?.name)}
                 </div>
               )}
@@ -124,12 +132,15 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className =
                   <img
                     src={leagueBadge}
                     alt={match.league}
-                    onError={() => setBadgeError(true)}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = 'none';
+                      setBadgeError(true);
+                    }}
                     className="w-full h-full object-contain filter drop-shadow"
                   />
                 </div>
               ) : (
-                <div className="px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-[8px] sm:text-[9px] font-black text-white/80 font-mono shadow-lg">
+                <div className="px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-[8px] sm:text-[9px] font-black text-white/80 font-mono shadow-lg">
                   VS
                 </div>
               )}
@@ -137,56 +148,58 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, onPlay, className =
           </div>
         ) : (
           /* Single Event / Combat / F1 / Tennis Full Thumbnail Photo */
-          <div className="absolute inset-0 bg-[#121422]">
+          <div className="absolute inset-0 bg-[#131620]">
             {match.thumbnailUrl && !thumbError ? (
               <img
                 src={match.thumbnailUrl}
                 alt={match.name}
                 loading="lazy"
-                onError={() => setThumbError(true)}
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = 'none';
+                  setThumbError(true);
+                }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-tr from-purple-900/40 via-blue-900/30 to-black flex items-center justify-center text-white/40">
-                <span className="text-2xl font-black">{match.category.toUpperCase()}</span>
+              <div className="w-full h-full bg-gradient-to-tr from-[#1E2230] to-[#090A0F] flex items-center justify-center text-white/40">
+                <span className="text-xl font-black">{match.category.toUpperCase()}</span>
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#090A0F]/90 via-[#090A0F]/30 to-transparent" />
           </div>
         )}
 
-        {/* Top-Right Badge: LIVE in Red or Time remaining (14m, 4h 44m) */}
+        {/* Top-Left Network Badge in dark frosted pill */}
+        <div className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 z-10">
+          <span className="px-2 py-0.5 rounded-md bg-[rgba(22,26,37,0.85)] backdrop-blur-md border border-white/8 text-[10px] font-semibold text-[#94A3B8] shadow-sm">
+            {networkName}
+          </span>
+        </div>
+
+        {/* Top-Right Badge: • LIVE 14.2K in #10B981 or start time */}
         <div className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-10">
           {timeInfo.isLive ? (
-            <span className="px-2 py-0.5 rounded-md bg-[#E50914] text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-lg flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              <span>LIVE</span>
+            <span className="px-2 py-0.5 rounded-full bg-[rgba(16,185,129,0.15)] text-[#10B981] border border-[#10B981]/25 text-[10px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
+              <span>LIVE {match.viewers ? `${Math.round(match.viewers / 100) / 10}K` : ''}</span>
             </span>
           ) : (
-            <span className="px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-md text-white/90 text-[9px] sm:text-[10px] font-bold border border-white/15 shadow-md">
+            <span className="px-2 py-0.5 rounded-md bg-[rgba(22,26,37,0.85)] backdrop-blur-md text-[#94A3B8] text-[10px] font-semibold border border-white/8 shadow-sm">
               {timeInfo.statusBadge}
             </span>
           )}
         </div>
-
-        {/* Bottom-Left Badge: Viewers count (• 782) */}
-        <div className="absolute bottom-2 left-2 sm:bottom-2.5 sm:left-2.5 z-10">
-          <span className="px-1.5 sm:px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-md border border-white/15 text-[9px] sm:text-[10px] font-mono font-bold text-white/90 flex items-center gap-1 shadow-md">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#E50914]" />
-            <span>{match.viewers || 342}</span>
-          </span>
-        </div>
       </div>
 
-      {/* 2. Metadata Below Banner (Matching Screenshot 2 benchmark) */}
-      <div className="mt-1.5 sm:mt-2 space-y-0.5 px-0.5 text-left" dir="ltr">
+      {/* 2. Metadata Below Thumbnail */}
+      <div className="mt-2 space-y-0.5 px-0.5 text-left" dir="ltr">
         <h3
-          className="text-xs sm:text-sm font-bold text-white group-hover:text-[#FF1838] transition-colors truncate tracking-tight"
+          className="text-[14px] font-semibold text-[#F8FAFC] group-hover:text-[#FF2A4B] transition-colors truncate tracking-tight"
           title={match.name}
         >
           {match.name}
         </h3>
-        <p className="text-[10px] sm:text-xs text-white/50 truncate font-medium">
+        <p className="text-[12px] text-[#94A3B8] truncate font-normal">
           {match.league}
         </p>
       </div>

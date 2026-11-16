@@ -4,12 +4,15 @@
  * Following Jakub Antalik / transitions.dev and mobile motion guidelines.
  */
 
+export * from '../utils/motionEngine';
+
 export const MOTION = {
   durations: {
     fast: 150,     // micro-interactions: taps, toggles, badges
     medium: 280,   // components: cards, dialogs, dropdowns
     slow: 400,     // page transitions, route changes
     hero: 600,     // hero banners, featured carousels
+    delete: 350,   // card delete exit transition
   },
   curves: {
     // Entering elements (deceleration)
@@ -21,6 +24,8 @@ export const MOTION = {
     spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
     // Shared axis / standard
     standard: 'cubic-bezier(0.2, 0.0, 0, 1)',
+    // Delete exit curve (sharp deceleration into collapse)
+    deleteExit: 'cubic-bezier(0.4, 0, 0.2, 1)',
   },
 } as const;
 

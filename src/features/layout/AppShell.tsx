@@ -9,7 +9,7 @@ interface AppShellProps {
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-[#07080D] text-white flex flex-col md:flex-row-reverse overflow-x-hidden antialiased">
+    <div className="min-h-screen bg-[#000000] text-white flex flex-col md:flex-row-reverse overflow-x-hidden antialiased">
       {/* Smart Collapsible Sidebar (Desktop / TV) */}
       <Sidebar />
 

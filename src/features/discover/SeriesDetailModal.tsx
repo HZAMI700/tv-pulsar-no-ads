@@ -5,41 +5,55 @@ import {
   Star,
   ArrowLeft,
   Bookmark,
-  Heart,
   Download,
-  Share2,
   Check,
+  CheckCircle2,
+  Pause,
+  RotateCcw,
   Plus,
   Tv,
-  Film,
-  Info,
 } from 'lucide-react';
 import { VidApiTvShow, ActiveMedia, TmdbSeason, TmdbEpisode } from '../../types';
 import { tmdbService } from '../../services/tmdbApi';
 import { useAppStore } from '../../store/useAppStore';
+import { useDownloadStore } from '../../store/downloadStore';
+import { DownloadQualityModal, VideoQuality } from './DownloadQualityModal';
+import { downloadService } from '../../services/downloadService';
+import { resolveVideoSource } from '../../services/videoSourceResolver';
+import { t } from '../../utils/translations';
 
 interface SeriesDetailModalProps {
   series: VidApiTvShow | null;
+  initialSeason?: number;
   onClose: () => void;
   onPlay: (media: ActiveMedia) => void;
 }
 
 export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
   series,
+  initialSeason = 1,
   onClose,
   onPlay,
 }) => {
-  const { isFavorite, toggleFavorite, language, getEpisodeProgress, episodeProgress, watchHistory } = useAppStore();
+  const { isFavorite, toggleFavorite, language, getEpisodeProgress, episodeProgress, watchHistory, openSeriesDetail } = useAppStore();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [details, setDetails] = useState<Partial<VidApiTvShow>>({});
   const [seasons, setSeasons] = useState<TmdbSeason[]>([]);
-  const [selectedSeason, setSelectedSeason] = useState<number>(1);
+  const [selectedSeason, setSelectedSeason] = useState<number>(initialSeason || 1);
   const [episodes, setEpisodes] = useState<TmdbEpisode[]>([]);
+  const [similarShows, setSimilarShows] = useState<VidApiTvShow[]>([]);
   const [loadingEpisodes, setLoadingEpisodes] = useState(false);
-  const [activeSubTab, setActiveSubTab] = useState<'episodes' | 'trailers' | 'similar'>('episodes');
+  const [activeSubTab, setActiveSubTab] = useState<'episodes' | 'similar'>('episodes');
 
-  // Ensure modal always initializes scrolled to the very top & locks background body scroll
+  const isRTL = language === 'ar';
+
+  useEffect(() => {
+    if (initialSeason && initialSeason > 0) {
+      setSelectedSeason(initialSeason);
+    }
+  }, [initialSeason]);
+
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -59,7 +73,6 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
     };
   }, [series?.tmdb_id]);
 
-  // Notify native Android bridge and handle hardware back
   useEffect(() => {
     if (!series) return;
     try {
@@ -68,48 +81,50 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
       }
     } catch (_) {}
 
-    const handlePopState = () => {
-      onClose();
-    };
-    window.addEventListener('popstate', handlePopState);
-
     return () => {
-      window.removeEventListener('popstate', handlePopState);
       try {
         if ((window as any).PulsarApp?.setModalState) {
           (window as any).PulsarApp.setModalState(false);
         }
       } catch (_) {}
     };
-  }, [series, onClose]);
+  }, [series]);
 
-  // Load TV Show details and seasons from TMDB
+  // Load TV details & seasons
   useEffect(() => {
     if (!series?.tmdb_id) return;
 
-    tmdbService
-      .getTvShowDetails(series.tmdb_id)
-      .then(({ details: d, seasons: s }) => {
-        setDetails(d);
-        setSeasons(s);
-        if (s.length > 0) {
-          setSelectedSeason(s[0].seasonNumber);
+    tmdbService.getTvShowDetails(series.tmdb_id)
+      .then((res) => {
+        setDetails(res.details || {});
+        if (res.seasons && res.seasons.length > 0) {
+          const valid = res.seasons.filter((s) => s.seasonNumber > 0);
+          setSeasons(valid.length > 0 ? valid : res.seasons);
+        }
+      })
+      .catch(() => {});
+
+    tmdbService.discoverTvShows({ page: 1, sortBy: 'popularity.desc' })
+      .then((res) => {
+        if (res.items) {
+          setSimilarShows(res.items.filter((s) => s.tmdb_id !== series.tmdb_id).slice(0, 8));
         }
       })
       .catch(() => {});
   }, [series?.tmdb_id]);
 
-  // Load episodes whenever selectedSeason changes
+  // Load Season Episodes
   useEffect(() => {
-    if (!series?.tmdb_id) return;
+    if (!series?.tmdb_id || !selectedSeason) return;
 
     setLoadingEpisodes(true);
-    tmdbService
-      .getSeasonEpisodes(series.tmdb_id, selectedSeason)
+    tmdbService.getSeasonEpisodes(series.tmdb_id, selectedSeason)
       .then((eps) => {
-        setEpisodes(eps);
+        setEpisodes(eps || []);
       })
-      .catch(() => {})
+      .catch(() => {
+        setEpisodes([]);
+      })
       .finally(() => setLoadingEpisodes(false));
   }, [series?.tmdb_id, selectedSeason]);
 
@@ -119,208 +134,255 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
   const isFav = isFavorite(mediaId);
 
   const displayTitle = details.title || series.title;
-  const displayOverview =
-    details.overview ||
-    series.overview ||
-    `Enjoy watching all seasons and episodes of ${displayTitle} in high definition 1080p via our high-speed ad-free player.`;
-  const displayBackdrop =
-    details.backdrop_url || series.backdrop_url || series.poster_url;
-  const displayRating =
-    details.rating ||
-    (series.rating && parseFloat(series.rating) > 0
-      ? parseFloat(series.rating).toFixed(1)
-      : '8.1');
+  const displayOverview = details.overview || series.overview || `Watch all seasons of ${displayTitle} in high definition with ad-free instant streaming.`;
+  const displayBackdrop = details.backdrop_url || series.backdrop_url || series.poster_url;
+  const displayRating = details.rating || (series.rating && parseFloat(series.rating) > 0 ? parseFloat(series.rating).toFixed(1) : '8.2');
   const displayYear = details.year || series.year || '2026';
-  const displayGenre = details.genre || series.genre || 'Action & Drama';
-  const totalEpisodesCount = details.numberOfEpisodes || episodes.length || 24;
+  const totalEpisodesCount = seasons.reduce((sum, s) => sum + (s.episodeCount || 0), 0) || 10;
 
-  const lastHistory = watchHistory.find(
-    (item) => item.id === mediaId || item.id === `tv-${series.tmdb_id}`
-  );
-  const resumeSeason = lastHistory?.tvMeta?.season || 1;
-  const resumeEpisode = lastHistory?.tvMeta?.episode || 1;
-  const resumeTime = lastHistory?.timestamp || 0;
-  const hasResume = Boolean(lastHistory && (resumeEpisode > 1 || resumeSeason > 1 || resumeTime > 10));
+  const { tasks, startEpisodeDownload, pauseTask, resumeTask } = useDownloadStore();
+  const [selectedQuality, setSelectedQuality] = useState<VideoQuality>('1080p');
+  const [showQualityModal, setShowQualityModal] = useState(false);
+  const [selectedEpisodeForModal, setSelectedEpisodeForModal] = useState<TmdbEpisode | null>(null);
+  const [webDownloadToast, setWebDownloadToast] = useState<string | null>(null);
 
-  const handlePlayEpisode = (episodeNumber: number, seasonNumber: number = selectedSeason, customTime?: number) => {
-    const epProg = getEpisodeProgress(series.tmdb_id, seasonNumber, episodeNumber);
-    const timeToResume = typeof customTime === 'number' ? customTime : epProg?.currentTime;
+  // Resume tracking
+  const existingHistory = watchHistory.find((w) => w.id.startsWith(`tv-${series.tmdb_id}`));
+  const hasResume = Boolean(existingHistory && existingHistory.timestamp && existingHistory.timestamp > 10);
+
+  const handlePlayEpisode = (epNum: number, seasonNum = selectedSeason, startTime?: number) => {
+    const epObj = episodes.find((e) => e.episodeNumber === epNum);
+    const epTask = Object.values(tasks).find(
+      (t) => t.mediaId === mediaId && t.season === seasonNum && t.episode === epNum
+    );
+
+    if (epTask?.status === 'COMPLETED') {
+      const subUrl = epTask.subtitleUrl || `https://appassets.androidplatform.net/downloads/${epTask.downloadId}.srt`;
+      if (downloadService.playOfflineMedia(epTask.downloadId, `${displayTitle} S${seasonNum} E${epNum}`, subUrl)) {
+        return;
+      }
+    }
+
+    const offlineUrl = epTask?.status === 'COMPLETED' ? (epTask.playableUri || epTask.filePath) : undefined;
+    const streamUrl = offlineUrl || tmdbService.buildTvEmbedUrl(series.tmdb_id, seasonNum, epNum, startTime);
 
     onPlay({
-      id: `tv-${series.tmdb_id}`,
-      title: `${displayTitle} - S${seasonNumber} E${episodeNumber}`,
-      subtitle: `${displayYear} • ${displayGenre} • Episode ${episodeNumber}`,
+      id: `${mediaId}-s${seasonNum}e${epNum}`,
+      title: `${displayTitle} - S${seasonNum} E${epNum}`,
+      subtitle: epObj?.name ? `${epObj.name}` : `Season ${seasonNum} • Episode ${epNum}`,
       type: 'tv',
-      streamUrl: tmdbService.buildTvEmbedUrl(
-        series.tmdb_id,
-        seasonNumber,
-        episodeNumber,
-        timeToResume
-      ),
-      poster: series.poster_url,
-      resumeTime: timeToResume,
-      totalDuration: epProg?.duration,
+      streamUrl,
+      poster: epObj?.stillPath || series.poster_url,
+      resumeTime: startTime,
       isLive: false,
-      tvMeta: {
-        tmdbId: series.tmdb_id,
-        season: seasonNumber,
-        episode: episodeNumber,
-        showTitle: displayTitle,
-      },
     });
+  };
+
+  const handleToggleDownloadEpisode = (ep: TmdbEpisode) => {
+    const epTask = Object.values(tasks).find(
+      (t) => t.mediaId === mediaId && t.season === selectedSeason && t.episode === ep.episodeNumber
+    );
+
+    if (!epTask || epTask.status === 'CANCELED') {
+      setSelectedEpisodeForModal(ep);
+      setShowQualityModal(true);
+    } else if (epTask.status === 'DOWNLOADING') {
+      pauseTask(epTask.downloadId);
+    } else if (epTask.status === 'PAUSED' || epTask.status === 'FAILED') {
+      resumeTask(epTask.downloadId);
+    } else if (epTask.status === 'COMPLETED') {
+      handlePlayEpisode(ep.episodeNumber, selectedSeason);
+    }
+  };
+
+  const handleConfirmEpisodes = async (
+    episodeNumbers: number[],
+    quality: VideoQuality,
+    subtitleUrl?: string,
+    subtitleLanguage?: string,
+    subtitleLanguages?: string[],
+    subtitleUrls?: Record<string, string>
+  ) => {
+    setSelectedQuality(quality);
+    for (const epNum of episodeNumbers) {
+      const ep = episodes.find((e) => e.episodeNumber === epNum) || selectedEpisodeForModal;
+      if (!ep) continue;
+
+      if (!downloadService.isSupported()) {
+        const resolved = resolveVideoSource({
+          type: 'tv',
+          mediaId: `tv-${series.tmdb_id}-s${selectedSeason}e${ep.episodeNumber}`,
+          tmdbId: series.tmdb_id,
+          title: `${displayTitle} S${selectedSeason}E${ep.episodeNumber}`,
+          season: selectedSeason,
+          episode: ep.episodeNumber,
+          quality,
+        });
+        const safeTitle = `${displayTitle}_S${selectedSeason}E${ep.episodeNumber}_${quality}`.replace(/[^a-zA-Z0-9_\u0600-\u06FF]/g, '_');
+        downloadService.directDownloadToDevice(resolved.url, `${safeTitle}.mp4`);
+        const msg = isRTL
+          ? `جاري تحميل الحلقة ${ep.episodeNumber} مباشرة إلى ملفات جهازك...`
+          : `Downloading Episode ${ep.episodeNumber} directly to your device files...`;
+        setWebDownloadToast(msg);
+        setTimeout(() => setWebDownloadToast(null), 4500);
+      } else {
+        await startEpisodeDownload(
+          series,
+          selectedSeason,
+          ep.episodeNumber,
+          quality,
+          ep.name || `Episode ${ep.episodeNumber}`,
+          subtitleUrl,
+          subtitleLanguage,
+          subtitleLanguages,
+          subtitleUrls
+        );
+      }
+    }
   };
 
   return createPortal(
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[100] bg-[#0E1018] text-white overflow-y-auto select-none motion-modal-enter"
+      className="fixed inset-0 z-[100] bg-[#0B0B0B] text-white overflow-y-auto select-none motion-modal-enter"
+      dir={isRTL ? 'rtl' : 'ltr'}
     >
-      {/* Top Navigation Bar: Back Arrow + "Details" */}
-      <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-[#0E1018]/90 backdrop-blur-md border-b border-white/5">
+      {/* Top Navigation Bar: Lowered for status bar clearance */}
+      <div className="sticky top-0 z-40 flex items-center justify-between px-4 pt-[max(2.5rem,env(safe-area-inset-top,2.5rem))] pb-3 bg-[#0B0B0B]/95 backdrop-blur-xl border-b border-white/10">
         <button
           data-modal-close="true"
           onClick={onClose}
           className="flex items-center gap-2 text-white/90 hover:text-white transition-colors cursor-pointer py-1 active:scale-95"
         >
-          <ArrowLeft className="w-5 h-5 text-white" />
-          <span className="text-base font-bold tracking-tight">Details</span>
+          <ArrowLeft className={`w-5 h-5 text-white ${isRTL ? 'rotate-180' : ''}`} />
+          <span className="text-base font-bold tracking-tight">{isRTL ? 'الرجوع' : 'Back'}</span>
         </button>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => toggleFavorite(mediaId)}
-            className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/80 transition-colors"
+            className="p-2 rounded-full bg-[#1C1C1E] border border-white/10 hover:bg-white/10 text-white/80 transition-all cursor-pointer active:scale-95"
+            title="My List"
           >
-            <Bookmark className={`w-4 h-4 ${isFav ? 'text-[#FF1838] fill-[#FF1838]' : ''}`} />
+            <Bookmark className={`w-4 h-4 ${isFav ? 'text-[#E50914] fill-[#E50914]' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* Hero Backdrop Banner (Matching Screenshot 4) */}
-      <div className="relative w-full h-[45vh] sm:h-[52vh] max-h-[500px] overflow-hidden bg-black">
+      {/* Hero Backdrop Banner */}
+      <div className="relative w-full h-[46vh] sm:h-[54vh] max-h-[520px] overflow-hidden bg-black">
         <img
           src={displayBackdrop}
           alt={displayTitle}
-          className="w-full h-full object-cover object-center filter brightness-95 transition-all duration-300"
+          className="w-full h-full object-cover object-center filter brightness-90 transition-all duration-300"
         />
-        {/* Gradients blending into dark background */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0E1018] via-[#0E1018]/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0B] via-[#0B0B0B]/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent" />
+
+        {/* Center Frosted Play Icon */}
+        <div
+          onClick={() => handlePlayEpisode(1)}
+          className="absolute inset-0 flex items-center justify-center cursor-pointer group"
+        >
+          <div className="w-14 h-14 rounded-full bg-white/90 text-black flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+            <Play className="w-6 h-6 fill-black ml-0.5" />
+          </div>
+        </div>
       </div>
 
       {/* Main Details Body */}
-      <div className="px-4 sm:px-8 -mt-16 sm:-mt-20 relative z-10 space-y-4 max-w-4xl mx-auto pb-24">
+      <div className="px-4 sm:px-8 -mt-16 sm:-mt-20 relative z-10 space-y-4 max-w-4xl mx-auto pb-28">
         {/* Title */}
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight drop-shadow-md">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight drop-shadow">
           {displayTitle}
         </h1>
 
-        {/* Metadata Row: Year • Rating • Episode Count • HD (Matching Screenshot 4) */}
-        <div className="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm text-white/70 font-medium">
-          <span>{displayYear}</span>
+        {/* Metadata Row */}
+        <div className="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm text-neutral-300 font-medium">
+          <span className="font-semibold">{displayYear}</span>
           <span>•</span>
           <div className="flex items-center gap-1 text-yellow-400 font-bold">
             <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
             <span>{displayRating}</span>
           </div>
           <span>•</span>
-          <span>{totalEpisodesCount} Episodes</span>
+          <span>{totalEpisodesCount} {isRTL ? 'حلقة' : 'Episodes'}</span>
           <span>•</span>
-          <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-white/10 text-white/90 border border-white/20">
+          <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-[#E50914] text-white tracking-wider">
             TV-MA
+          </span>
+          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#1C1C1E] border border-white/10 text-neutral-300">
+            Full HD
           </span>
         </div>
 
-        {/* Action Button: Play Episode 1 / Resume + HD Badge (Matching Screenshot 4) */}
+        {/* Action Button: Play Episode 1 / Resume */}
         <div className="flex items-center gap-2 pt-1">
           <button
-            onClick={() => {
-              if (hasResume) {
-                setSelectedSeason(resumeSeason);
-                handlePlayEpisode(resumeEpisode, resumeSeason, resumeTime);
-              } else {
-                handlePlayEpisode(1);
-              }
-            }}
-            className="flex-1 py-3 px-4 rounded-xl bg-white hover:bg-white/95 text-black font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl transition-all active:scale-98 cursor-pointer t-btn-press"
+            onClick={() => handlePlayEpisode(1)}
+            className="flex-1 py-3 px-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-xl transition-all active:scale-98 cursor-pointer t-btn-press"
           >
             <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-black text-black" />
             <span>
               {hasResume
-                ? `Resume (S${resumeSeason} • E${resumeEpisode})`
-                : 'Play Episode 1'}
+                ? (isRTL ? `استئناف المشاهدة` : `Resume Watching`)
+                : (isRTL ? 'تشغيل الحلقة 1' : 'Play Episode 1')}
             </span>
           </button>
 
-          <div className="px-3 py-3 rounded-xl bg-white/10 border border-white/15 text-white/80 text-xs font-black shrink-0">
-            HD
-          </div>
-        </div>
-
-        {/* Add to My List Link (Matching Screenshot 4) */}
-        <div className="pt-0.5">
           <button
             onClick={() => toggleFavorite(mediaId)}
-            className="inline-flex items-center gap-2 text-[#FF1838] hover:text-[#ff3853] text-xs sm:text-sm font-bold transition-colors cursor-pointer select-none"
+            className="px-4 py-3 rounded-xl bg-[#1C1C1E] hover:bg-[#262629] border border-white/10 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer active:scale-95"
           >
-            <Bookmark className={`w-4 h-4 ${isFav ? 'fill-[#FF1838]' : ''}`} />
-            <span>{isFav ? 'Added to My List' : 'Add to My List'}</span>
+            {isFav ? <Check className="w-4 h-4 text-[#E50914]" /> : <Plus className="w-4 h-4" />}
+            <span>{isRTL ? 'قائمتي' : 'My List'}</span>
           </button>
         </div>
 
-        {/* Overview Synopsis (Matching Screenshot 4) */}
-        <p className="text-xs sm:text-sm text-white/80 leading-relaxed font-normal text-right sm:text-left">
+        {/* Overview Synopsis */}
+        <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
           {displayOverview}
         </p>
 
-        {/* Season Selector Pills (Matching Screenshot 4) */}
-        <div className="space-y-2 pt-2">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        {/* Season Selector Pills */}
+        <div className="space-y-2 pt-1">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar -mx-4 px-4">
             {seasons.map((season) => {
               const isActive = selectedSeason === season.seasonNumber;
               return (
                 <button
+                  type="button"
                   key={season.seasonNumber}
-                  onClick={() => setSelectedSeason(season.seasonNumber)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedSeason(season.seasonNumber);
+                    setActiveSubTab('episodes');
+                  }}
                   className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer active:scale-95 t-btn-press ${
                     isActive
                       ? 'bg-white text-black shadow-lg font-black'
-                      : 'bg-[#1C1E2A] text-white/80 hover:text-white border border-white/5'
+                      : 'bg-[#1C1C1E] text-neutral-300 hover:bg-white/10 border border-white/5'
                   }`}
                 >
-                  Season {season.seasonNumber}
+                  {isRTL ? `الموسم ${season.seasonNumber}` : `Season ${season.seasonNumber}`}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Detail Sub-Tabs: Episodes • Trailers • Similar (Matching Screenshot 5) */}
+        {/* Sub-Tabs: Episodes • Similar */}
         <div className="flex items-center gap-6 border-b border-white/10 pt-2 text-xs sm:text-sm font-bold">
           <button
             onClick={() => setActiveSubTab('episodes')}
             className={`pb-2.5 transition-colors cursor-pointer relative ${
               activeSubTab === 'episodes'
                 ? 'text-white font-black'
-                : 'text-white/50 hover:text-white'
+                : 'text-neutral-400 hover:text-white'
             }`}
           >
-            <span>Episodes</span>
+            <span>{isRTL ? 'الحلقات' : 'Episodes'}</span>
             {activeSubTab === 'episodes' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E50914] rounded-full shadow-[0_0_8px_#E50914]" />
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveSubTab('trailers')}
-            className={`pb-2.5 transition-colors cursor-pointer relative ${
-              activeSubTab === 'trailers'
-                ? 'text-white font-black'
-                : 'text-white/50 hover:text-white'
-            }`}
-          >
-            <span>Trailers</span>
-            {activeSubTab === 'trailers' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E50914] rounded-full shadow-[0_0_8px_#E50914]" />
             )}
           </button>
@@ -330,27 +392,27 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
             className={`pb-2.5 transition-colors cursor-pointer relative ${
               activeSubTab === 'similar'
                 ? 'text-white font-black'
-                : 'text-white/50 hover:text-white'
+                : 'text-neutral-400 hover:text-white'
             }`}
           >
-            <span>Similar</span>
+            <span>{isRTL ? 'مسلسلات مشابهة' : 'More Like This'}</span>
             {activeSubTab === 'similar' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E50914] rounded-full shadow-[0_0_8px_#E50914]" />
             )}
           </button>
         </div>
 
-        {/* Tab 1: Episodes Vertical List (Matching Screenshot 5) */}
+        {/* Tab 1: Episodes Vertical List */}
         {activeSubTab === 'episodes' && (
           <div className="space-y-3 pt-2">
             {loadingEpisodes ? (
               <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-16 rounded-xl bg-white/5 animate-pulse" />
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-16 rounded-xl bg-[#141414] animate-pulse" />
                 ))}
               </div>
             ) : episodes.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {episodes.map((ep) => {
                   const epProg = getEpisodeProgress(series.tmdb_id, selectedSeason, ep.episodeNumber);
                   const isWatched = Boolean(
@@ -362,26 +424,23 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
                     ? Math.min(100, Math.round((epProg.currentTime / epProg.duration) * 100))
                     : 0;
 
+                  const epTask = Object.values(tasks).find(
+                    (t) => t.mediaId === mediaId && t.season === selectedSeason && t.episode === ep.episodeNumber
+                  );
+
                   return (
                     <div
                       key={ep.episodeNumber}
                       onClick={() => handlePlayEpisode(ep.episodeNumber)}
-                      className={`flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-[#141624]/60 hover:bg-[#1E2136] border transition-all cursor-pointer group select-none t-card ${
-                        isWatched
-                          ? 'border-[#00E676]/40 bg-[#00E676]/5'
-                          : hasPartial
-                          ? 'border-amber-500/40 bg-amber-500/5'
-                          : 'border-white/5 hover:border-white/20'
-                      }`}
+                      className="flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-[#141414] hover:bg-[#1C1C1E] border border-white/5 hover:border-white/20 transition-all cursor-pointer group select-none t-card"
                     >
-                      {/* Left: Number + Thumbnail with Play Overlay & Progress Bar */}
-                      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                        <span className="text-xs sm:text-sm font-bold text-white/50 w-4 text-center shrink-0">
+                      {/* Left: Number + 16:9 Thumbnail + Title */}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="text-xs font-bold text-neutral-500 w-4 text-center shrink-0">
                           {ep.episodeNumber}
                         </span>
 
-                        {/* Thumbnail with centered play button & watch progress indicator */}
-                        <div className="relative w-24 sm:w-28 aspect-[16/9] rounded-xl overflow-hidden bg-black/80 shrink-0 border border-white/10">
+                        <div className="relative w-24 sm:w-28 aspect-video rounded-xl overflow-hidden bg-black shrink-0 border border-white/10">
                           <img
                             src={
                               ep.stillPath ||
@@ -392,104 +451,129 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
                             loading="lazy"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
-                          <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-black/70 group-hover:bg-[#FF1838] border border-white/40 flex items-center justify-center transition-colors">
-                              <Play className="w-3 h-3 fill-white text-white ml-0.5" />
+                          <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full bg-white/90 group-hover:bg-[#E50914] text-black group-hover:text-white flex items-center justify-center transition-colors shadow">
+                              <Play className="w-2.5 h-2.5 fill-current ml-0.2" />
                             </div>
                           </div>
 
-                          {/* Progress bar at base of thumbnail */}
+                          {/* Progress bar at base */}
                           {isWatched ? (
-                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#00E676] shadow-[0_0_6px_#00E676]" />
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#E50914]" />
                           ) : hasPartial ? (
                             <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/60">
                               <div
-                                className="h-full bg-amber-400 shadow-[0_0_6px_#FFB300]"
+                                className="h-full bg-[#E50914]"
                                 style={{ width: `${Math.max(10, progressPct)}%` }}
                               />
                             </div>
                           ) : null}
                         </div>
 
-                        {/* Title and Status Tags */}
-                        <div className="min-w-0 space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-[#FF1838] transition-colors">
-                              Episode {ep.episodeNumber}
-                            </h4>
-                            {isWatched ? (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#00E676]/20 border border-[#00E676]/40 text-[#00E676] text-[10px] font-bold shrink-0">
-                                <Check className="w-2.5 h-2.5 stroke-[3]" />
-                                <span>Watched</span>
-                              </span>
-                            ) : hasPartial ? (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-bold shrink-0">
-                                <span>Watched {progressPct}%</span>
-                              </span>
-                            ) : null}
-                          </div>
-                          {ep.name && ep.name !== `Episode ${ep.episodeNumber}` && (
-                            <p className="text-[11px] text-white/60 truncate max-w-[150px] sm:max-w-xs">
-                              {ep.name}
-                            </p>
-                          )}
+                        {/* Title & Info */}
+                        <div className="min-w-0 space-y-0.5">
+                          <h4 className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-[#E50914] transition-colors">
+                            {ep.name || `Episode ${ep.episodeNumber}`}
+                          </h4>
+                          <p className="text-[10px] text-neutral-400">
+                            {ep.duration || '45m'}
+                          </p>
                         </div>
                       </div>
 
-                      {/* Right: Download icon + HD Badge (Matching Screenshot 5) */}
+                      {/* Right: Download icon */}
                       <div className="flex items-center gap-2 shrink-0">
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handlePlayEpisode(ep.episodeNumber);
+                            handleToggleDownloadEpisode(ep);
                           }}
-                          className="p-1.5 rounded-lg text-white/50 hover:text-white transition-colors"
-                          title="Download / Stream"
+                          className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+                            epTask?.status === 'COMPLETED'
+                              ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                              : epTask?.status === 'DOWNLOADING'
+                              ? 'bg-[#E50914]/20 border-[#E50914]/40 text-[#E50914]'
+                              : epTask?.status === 'PAUSED'
+                              ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                              : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
+                          }`}
                         >
-                          <Download className="w-4 h-4" />
+                          {epTask?.status === 'COMPLETED' ? (
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                          ) : epTask?.status === 'DOWNLOADING' ? (
+                            <Pause className="w-3.5 h-3.5 animate-pulse" />
+                          ) : (
+                            <Download className="w-4 h-4" />
+                          )}
                         </button>
-
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-white/10 text-white/70 border border-white/10">
-                          HD
-                        </span>
                       </div>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div className="text-center py-10 text-white/50 text-xs">
-                No episodes currently available for this season.
+              <div className="text-center py-10 text-neutral-500 text-xs">
+                {isRTL ? 'لا توجد حلقات متاحة لهذا الموسم.' : 'No episodes currently available for this season.'}
               </div>
             )}
           </div>
         )}
 
-        {/* Tab 2: Trailers */}
-        {activeSubTab === 'trailers' && (
-          <div className="p-8 text-center bg-white/5 rounded-2xl border border-white/5">
-            <Play className="w-8 h-8 text-white/30 mx-auto mb-2" />
-            <p className="text-xs text-white/60">
-              Official HD trailer is available directly through the video player.
-            </p>
-            <button
-              onClick={() => handlePlayEpisode(1)}
-              className="mt-3 px-4 py-2 rounded-xl bg-[#E50914] text-white text-xs font-bold"
-            >
-              Play Trailer
-            </button>
-          </div>
-        )}
-
-        {/* Tab 3: Similar */}
+        {/* Tab 2: Similar Shows */}
         {activeSubTab === 'similar' && (
-          <div className="p-8 text-center bg-white/5 rounded-2xl border border-white/5">
-            <p className="text-xs text-white/60">
-              Explore more TV series and similar shows via Collections and Trending Now on the Home page.
-            </p>
+          <div className="pt-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {similarShows.map((sim) => (
+                <div
+                  key={sim.tmdb_id}
+                  onClick={() => openSeriesDetail(sim, 1, 'home')}
+                  className="cursor-pointer group t-card"
+                >
+                  <div className="aspect-[2/3] rounded-xl overflow-hidden bg-[#1C1C1E] border border-white/10 mb-1 relative">
+                    <img
+                      src={sim.poster_url}
+                      alt={sim.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                    />
+                    <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/75 text-[9px] font-bold text-yellow-400">
+                      ★ {sim.rating || '8.0'}
+                    </div>
+                  </div>
+                  <h4 className="text-xs font-bold text-white truncate group-hover:text-[#E50914] transition-colors">
+                    {sim.title}
+                  </h4>
+                  <p className="text-[10px] text-neutral-400">{sim.year || '2026'}</p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
+
+      {/* Web Direct Download Toast */}
+      {webDownloadToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] bg-[#1E2232] border border-[#FF2A4B]/60 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 animate-slideUp">
+          <Download className="w-4 h-4 text-[#FF2A4B] animate-bounce" />
+          <span>{webDownloadToast}</span>
+        </div>
+      )}
+
+      {/* Bulk / Single Episode & Quality Selection Modal */}
+      <DownloadQualityModal
+        isOpen={showQualityModal}
+        onClose={() => {
+          setShowQualityModal(false);
+          setSelectedEpisodeForModal(null);
+        }}
+        mediaType="tv"
+        series={series}
+        season={selectedSeason}
+        episodes={selectedEpisodeForModal ? [selectedEpisodeForModal] : episodes}
+        initialQuality={selectedQuality}
+        onConfirmEpisodes={handleConfirmEpisodes}
+      />
     </div>,
     document.body
   );

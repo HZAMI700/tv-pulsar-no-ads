@@ -1,46 +1,119 @@
 import React from 'react';
-import { Home, Trophy, Tv, Film, Bookmark } from 'lucide-react';
+import { Home, Trophy, Tv, Download, Settings, Activity } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+import { useDownloadStore } from '../../store/downloadStore';
 import { NavigationTab } from '../../types';
+import { isNativeApp } from '../../utils/platform';
 
 export const BottomNav: React.FC = () => {
-  const { currentTab, setCurrentTab } = useAppStore();
+  const { currentTab, setCurrentTab, language } = useAppStore();
+  const { tasks } = useDownloadStore();
 
-  const navItems: Array<{ tab: NavigationTab; label: string; icon: React.ReactNode }> = [
-    { tab: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
-    { tab: 'sports', label: 'Matches', icon: <Trophy className="w-5 h-5" /> },
-    { tab: 'channels', label: 'Channels', icon: <Tv className="w-5 h-5" /> },
-    { tab: 'movies', label: 'Movies & TV', icon: <Film className="w-5 h-5" /> },
-    { tab: 'favorites', label: 'My List', icon: <Bookmark className="w-5 h-5" /> },
+  const isRTL = language === 'ar';
+  const isNative = isNativeApp();
+  const downloadCount = Object.keys(tasks || {}).length || 4;
+
+  const navItems: Array<{
+    tab: NavigationTab;
+    label: string;
+    labelAr: string;
+    icon: (isActive: boolean) => React.ReactNode;
+    badge?: number;
+    isCurrent: boolean;
+  }> = [
+    {
+      tab: 'home',
+      label: 'Home',
+      labelAr: 'الرئيسية',
+      icon: (active) => <Home className={`w-5 h-5 transition-transform duration-200 ${active ? 'scale-105' : ''}`} />,
+      isCurrent: currentTab === 'home' || currentTab === 'discover',
+    },
+    {
+      tab: 'channels',
+      label: 'Channels',
+      labelAr: 'القنوات',
+      icon: (active) => <Tv className={`w-5 h-5 transition-transform duration-200 ${active ? 'scale-105' : ''}`} />,
+      isCurrent: currentTab === 'channels',
+    },
+    {
+      tab: 'sports',
+      label: 'Matches',
+      labelAr: 'المباريات',
+      icon: (active) => <Trophy className={`w-5 h-5 transition-transform duration-200 ${active ? 'scale-105' : ''}`} />,
+      isCurrent: currentTab === 'sports',
+    },
+    ...(isNative
+      ? [
+          {
+            tab: 'downloads' as NavigationTab,
+            label: 'Downloads',
+            labelAr: 'التنزيلات',
+            icon: (active: boolean) => (
+              <Download
+                className={`w-5 h-5 transition-transform duration-200 ${
+                  active ? 'scale-105' : ''
+                }`}
+              />
+            ),
+            badge: downloadCount,
+            isCurrent: currentTab === 'downloads' || currentTab === 'library',
+          },
+        ]
+      : [
+          {
+            tab: 'scores' as NavigationTab,
+            label: 'Scores',
+            labelAr: 'النتائج',
+            icon: (active: boolean) => (
+              <Activity
+                className={`w-5 h-5 transition-transform duration-200 ${
+                  active ? 'scale-105 text-[#E50914]' : ''
+                }`}
+              />
+            ),
+            isCurrent: currentTab === 'scores' || currentTab === 'download',
+          },
+        ]),
+    {
+      tab: 'settings',
+      label: 'Settings',
+      labelAr: 'الإعدادات',
+      icon: (active) => <Settings className={`w-5 h-5 transition-transform duration-200 ${active ? 'scale-105 rotate-45 text-[#E50914]' : ''}`} />,
+      isCurrent: currentTab === 'settings',
+    },
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom,0.75rem))] left-3.5 right-3.5 z-40">
-      <div className="relative flex items-center justify-around py-2 px-3 bg-[#0E1018]/95 backdrop-blur-3xl rounded-[28px] border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.95)]">
-        {navItems.map((item) => {
-          const isActive = currentTab === item.tab;
-          return (
-            <button
-              key={item.tab}
-              onClick={() => setCurrentTab(item.tab)}
-              className={`relative flex flex-col items-center justify-center flex-1 py-1 transition-all duration-200 cursor-pointer select-none motion-press ${
-                isActive ? 'text-[#FF1838]' : 'text-white/50 hover:text-white/80'
+    <nav className="md:hidden fixed bottom-0 inset-x-0 bg-[#0B0B0B]/95 backdrop-blur-xl border-t border-white/10 px-2 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0.75rem))] flex items-center justify-around z-40 select-none">
+      {navItems.map((item) => {
+        const isActive = item.isCurrent;
+        return (
+          <button
+            key={item.tab}
+            onClick={() => setCurrentTab(item.tab)}
+            className={`relative flex flex-col items-center justify-center flex-1 py-1 px-1 transition-colors duration-150 cursor-pointer ${
+              isActive ? 'text-[#E50914]' : 'text-neutral-400 hover:text-white'
+            }`}
+          >
+            <div className="relative">
+              {item.icon(isActive)}
+              {item.badge !== undefined && item.badge > 0 && (
+                <span className="absolute -top-1.5 -right-2.5 bg-[#E50914] text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow">
+                  {item.badge}
+                </span>
+              )}
+            </div>
+
+            <span
+              className={`text-[10px] mt-1 tracking-tight truncate max-w-[72px] ${
+                isActive ? 'font-bold text-[#E50914]' : 'font-medium text-neutral-400'
               }`}
             >
-              {/* Active Glowing Red Indicator Bar with smooth spring */}
-              {isActive && (
-                <span className="absolute -top-2 w-8 h-1 rounded-full bg-[#FF1838] shadow-[0_0_14px_#FF1838] transition-all duration-300" />
-              )}
-              <span className={`transition-transform duration-200 ${isActive ? 'scale-110 drop-shadow-[0_0_8px_rgba(255,24,56,0.6)]' : ''}`}>
-                {item.icon}
-              </span>
-              <span className={`text-[10px] mt-1 tracking-tight truncate max-w-[62px] ${isActive ? 'font-bold text-[#FF1838]' : 'font-medium'}`}>
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+              {isRTL ? item.labelAr : item.label}
+            </span>
+          </button>
+        );
+      })}
     </nav>
   );
 };

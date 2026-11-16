@@ -6,11 +6,19 @@ import { SportsPage } from './features/sports/SportsPage';
 import { ChannelsPage } from './features/channels/ChannelsPage';
 import { DiscoverPage } from './features/discover/DiscoverPage';
 import { FavoritesPage } from './features/favorites/FavoritesPage';
+import { DownloadsPage } from './features/downloads/DownloadsPage';
+import { LibraryPage } from './features/library/LibraryPage';
+import { DownloadPage } from './features/download/DownloadPage';
+import { ScoresPage } from './features/scores/ScoresPage';
+import { SettingsPage } from './features/settings/SettingsPage';
 import { UniversalPlayer } from './features/player/UniversalPlayer';
+import { MovieDetailModal } from './features/discover/MovieDetailModal';
+import { SeriesDetailModal } from './features/discover/SeriesDetailModal';
 import { SearchModal } from './features/modals/SearchModal';
 import { TelegramModal } from './features/modals/TelegramModal';
 import { SettingsModal } from './features/modals/SettingsModal';
 import { ErrorBoundary } from './design-system/components/ErrorBoundary';
+import { isNativeApp } from './utils/platform';
 
 export const App: React.FC = () => {
   const {
@@ -18,6 +26,9 @@ export const App: React.FC = () => {
     setCurrentTab,
     activeMedia,
     closePlayer,
+    activeDetail,
+    closeDetail,
+    setActiveMedia,
     isSearchOpen,
     setIsSearchOpen,
     isSettingsOpen,
@@ -31,6 +42,7 @@ export const App: React.FC = () => {
   useEffect(() => {
     (window as any).handleAppBackPress = () => {
       // 1. If player is open, close player and restore orientation
+      // Note: activeDetail is preserved so the user returns to the Movie or Series Detail page!
       if (activeMedia) {
         closePlayer();
         try {
@@ -41,7 +53,13 @@ export const App: React.FC = () => {
         return true;
       }
 
-      // 2. If search / settings / telegram modal is open, close it
+      // 2. If movie or series detail page is open, close detail page and return to previous tab
+      if (activeDetail) {
+        closeDetail();
+        return true;
+      }
+
+      // 3. If search / settings / telegram modal is open, close it
       if (isSearchOpen) {
         setIsSearchOpen(false);
         return true;
@@ -55,20 +73,20 @@ export const App: React.FC = () => {
         return true;
       }
 
-      // 3. If any movie or series detail modal is open
+      // 4. If any legacy modal close button exists
       const modalCloseBtn = document.querySelector('[data-modal-close="true"]') as HTMLButtonElement | null;
       if (modalCloseBtn) {
         modalCloseBtn.click();
         return true;
       }
 
-      // 4. If on another tab (sports, channels, movies, favorites), return to home tab
+      // 5. If on another tab (sports, channels, movies, favorites, downloads), return to home tab
       if (currentTab !== 'home') {
         setCurrentTab('home');
         return true;
       }
 
-      // 5. Root screen: let Android handle double-tap exit
+      // 6. Root screen: let Android handle double-tap exit
       return false;
     };
 
@@ -78,6 +96,8 @@ export const App: React.FC = () => {
   }, [
     activeMedia,
     closePlayer,
+    activeDetail,
+    closeDetail,
     isSearchOpen,
     setIsSearchOpen,
     isSettingsOpen,
@@ -108,19 +128,45 @@ export const App: React.FC = () => {
   return (
     <AppShell>
       {/* Tab Switcher with Unified Motion System & Error Resilience */}
-      <ErrorBoundary fallbackTitle="Failed to load page">
-        <div key={currentTab} className="motion-page min-h-[calc(100vh-130px)]">
+      <ErrorBoundary key={currentTab} fallbackTitle="Failed to load page">
+        <div className="motion-page min-h-[calc(100vh-130px)]">
           {currentTab === 'home' && <HomePage />}
           {currentTab === 'sports' && <SportsPage />}
           {currentTab === 'channels' && <ChannelsPage />}
           {currentTab === 'movies' && <DiscoverPage />}
-          {currentTab === 'favorites' && <FavoritesPage />}
+          {currentTab === 'discover' && <DiscoverPage />}
+          {currentTab === 'download' && <ScoresPage />}
+          {currentTab === 'scores' && <ScoresPage />}
+          {currentTab === 'settings' && <SettingsPage />}
+          {currentTab === 'downloads' && (isNativeApp() ? <DownloadsPage /> : <HomePage />)}
+          {(currentTab === 'library' || currentTab === 'favorites') && (
+            isNativeApp() ? <DownloadsPage /> : <FavoritesPage />
+          )}
         </div>
       </ErrorBoundary>
 
       {/* Universal Player Overlay (HLS + VidLink + StreamFree) */}
       {activeMedia && (
         <UniversalPlayer media={activeMedia} onClose={closePlayer} />
+      )}
+
+      {/* Central Movie Detail Screen */}
+      {activeDetail?.type === 'movie' && activeDetail.movie && (
+        <MovieDetailModal
+          movie={activeDetail.movie}
+          onClose={closeDetail}
+          onPlay={(media) => setActiveMedia(media)}
+        />
+      )}
+
+      {/* Central Series Detail Screen with Season Context */}
+      {activeDetail?.type === 'tv' && activeDetail.series && (
+        <SeriesDetailModal
+          series={activeDetail.series}
+          initialSeason={activeDetail.selectedSeason || 1}
+          onClose={closeDetail}
+          onPlay={(media) => setActiveMedia(media)}
+        />
       )}
 
       {/* Modals & Dialogs */}

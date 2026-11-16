@@ -1,6 +1,6 @@
 export type ContentType = 'channel' | 'match' | 'movie' | 'tv' | 'episode';
 
-export type NavigationTab = 'home' | 'sports' | 'channels' | 'movies' | 'discover' | 'favorites';
+export type NavigationTab = 'home' | 'sports' | 'channels' | 'movies' | 'discover' | 'favorites' | 'downloads' | 'library' | 'download' | 'settings' | 'scores';
 
 export interface ChannelItem {
   id: string;
@@ -129,6 +129,8 @@ export interface ActiveMedia {
   resumeTime?: number;
   totalDuration?: number;
   isLive?: boolean;
+  subtitleUrl?: string;
+  subtitleLanguage?: string;
   tvMeta?: {
     tmdbId?: string;
     imdbId?: string;
@@ -143,6 +145,129 @@ export interface ActiveMedia {
     activeServerIndex: number;
   };
 }
+
+export interface EspnCompetitor {
+  id: string;
+  name: string;
+  displayName: string;
+  abbreviation: string;
+  score: number;
+  homeAway: 'home' | 'away';
+  logo?: string;
+  record?: string;
+  winner?: boolean;
+}
+
+export interface EspnEvent {
+  id: string;
+  name: string;
+  shortName: string;
+  date: string;
+  sport: string;
+  league: string;
+  leagueName: string;
+  state: 'pre' | 'in' | 'post';
+  statusDetail: string;
+  isLive: boolean;
+  clock?: string;
+  period?: number;
+  venue?: string;
+  broadcast?: string;
+  home: EspnCompetitor;
+  away: EspnCompetitor;
+}
+
+export interface EspnStandingRow {
+  rank: number;
+  team: {
+    id: string;
+    name: string;
+    displayName: string;
+    abbreviation: string;
+    logo?: string;
+  };
+  stats: Record<string, string>;
+  points: number;
+  gamesPlayed: number;
+  wins: number;
+  losses: number;
+  ties: number;
+  goalDifferential: string;
+}
+
+export interface EspnStandingTable {
+  name: string;
+  abbreviation: string;
+  rows: EspnStandingRow[];
+}
+
+export interface EspnGameAnalytics {
+  eventId: string;
+  homeStats: Record<string, string>;
+  awayStats: Record<string, string>;
+  predictor?: {
+    homeWinPercentage?: number;
+    awayWinPercentage?: number;
+  };
+  plays?: Array<{
+    id: string;
+    text: string;
+    clock?: string;
+    type?: string;
+    teamId?: string;
+    scoringPlay?: boolean;
+  }>;
+  leaders?: Array<{
+    name: string;
+    displayName: string;
+    leaders: Array<{
+      displayValue: string;
+      athlete: {
+        id: string;
+        displayName: string;
+        headshot?: string;
+        position?: string;
+        jersey?: string;
+      };
+    }>;
+  }>;
+}
+
+
+
+export type DownloadStatus = 'QUEUED' | 'DOWNLOADING' | 'PAUSED' | 'COMPLETED' | 'FAILED' | 'CANCELED' | 'DELETED';
+
+export interface DownloadTask {
+  downloadId: string;
+  mediaId: string;
+  mediaType: 'movie' | 'episode' | 'tv';
+  title: string;
+  seriesId?: string;
+  seriesTitle?: string;
+  season?: number;
+  episode?: number;
+  quality: string;
+  status: DownloadStatus;
+  progress: number;
+  downloadedBytes: number;
+  totalBytes: number;
+  filePath?: string;
+  fileUri?: string;
+  playableUri?: string;
+  subtitleUrl?: string;
+  subtitleLanguage?: string;
+  subtitleLanguages?: string[];
+  subtitleUrls?: Record<string, string>;
+  posterUrl?: string;
+  error?: string;
+  speedBytesPerSec?: number;
+  speedFormatted?: string;
+  etaSeconds?: number;
+  createdAt?: number;
+  updatedAt?: number;
+}
+
+
 
 export interface WatchProgress {
   mediaId: string;
@@ -182,3 +307,7 @@ export interface WatchHistoryItem {
     activeServerIndex: number;
   };
 }
+
+
+
+

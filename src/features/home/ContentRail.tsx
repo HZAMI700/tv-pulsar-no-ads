@@ -32,20 +32,20 @@ export const ContentRail: React.FC<ContentRailProps> = ({
   };
 
   return (
-    <section className={`py-4 space-y-3 select-none ${className}`}>
-      {/* Rail Header */}
+    <section className={`py-3 space-y-2.5 select-none ${className}`}>
+      {/* Rail Header (18sp-20sp SemiBold #F8FAFC, paired with 13sp #94A3B8 action) */}
       <div className="flex items-end justify-between px-4 md:px-8">
         <div className="flex items-center gap-2.5">
-          <div className="w-1 h-5 rounded-full bg-[#FF1838]" />
+          <div className="w-1 h-4 rounded-full bg-[#FF2A4B]" />
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg md:text-xl font-bold tracking-tight text-white">
+              <h2 className="text-[18px] sm:text-[20px] font-semibold tracking-tight text-[#F8FAFC]">
                 {title}
               </h2>
               {badge}
             </div>
             {subtitle && (
-              <p className="text-xs text-white/50 font-medium mt-0.5">{subtitle}</p>
+              <p className="text-xs text-[#94A3B8] font-normal mt-0.5">{subtitle}</p>
             )}
           </div>
         </div>
@@ -55,24 +55,24 @@ export const ContentRail: React.FC<ContentRailProps> = ({
           {actionText && (
             <button
               onClick={onAction}
-              className="text-xs font-semibold text-[#FF1838] hover:text-[#FF3853] transition-colors cursor-pointer px-2 py-1"
+              className="text-[13px] font-normal text-[#94A3B8] hover:text-[#F8FAFC] transition-colors cursor-pointer px-2 py-1"
             >
               {actionText}
             </button>
           )}
 
-          <div className="hidden sm:flex items-center gap-1">
+          <div className="hidden sm:flex items-center gap-1.5">
             <button
               onClick={() => handleScroll('right')}
               aria-label="Scroll right"
-              className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-full bg-[#1E2230] border border-white/8 text-[#94A3B8] hover:text-[#F8FAFC] hover:border-white/20 transition-all flex items-center justify-center cursor-pointer active:scale-95"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleScroll('left')}
               aria-label="Scroll left"
-              className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-full bg-[#1E2230] border border-white/8 text-[#94A3B8] hover:text-[#F8FAFC] hover:border-white/20 transition-all flex items-center justify-center cursor-pointer active:scale-95"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -83,7 +83,7 @@ export const ContentRail: React.FC<ContentRailProps> = ({
       {/* Scrolling Container */}
       <div
         ref={scrollRef}
-        className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-none px-4 md:px-8 scroll-smooth"
+        className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-none px-4 md:px-8 scroll-smooth py-1"
         style={{
           scrollSnapType: 'x mandatory',
           WebkitOverflowScrolling: 'touch',

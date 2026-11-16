@@ -1,229 +1,103 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import { Tv, Search, Radio, ChevronDown, Check, Globe } from 'lucide-react';
+import { Search, User, Loader2 } from 'lucide-react';
 import { ChannelItem } from '../../types';
 import { channelsService } from '../../services/channelsApi';
-import { ChannelCard } from './ChannelCard';
 import { useAppStore } from '../../store/useAppStore';
 
-interface CountryFilter {
-  id: string;
-  label: string;
-  flag: string;
-  matcher?: (c: ChannelItem) => boolean;
+interface NetworkDesign {
+  bgClass: string;
+  logoHtml: React.ReactNode;
 }
 
-const COUNTRIES: CountryFilter[] = [
-  { id: 'all', label: 'All Channels', flag: '🌍' },
-  {
-    id: 'qa',
-    label: 'Qatar (beIN & Al Kass)',
-    flag: '🇶🇦',
-    matcher: (c) =>
-      Boolean(
-        c.country === 'QA' ||
-        (c.category && c.category.toLowerCase().includes('bein sports')) ||
-        (c.category && c.category.toLowerCase().includes('alkass')) ||
-        (!['US', 'FR', 'TR', 'AU'].includes(c.country) &&
-          (c.name.toLowerCase().includes('bein sports ar') ||
-            c.name.toLowerCase().includes('alkass') ||
-            c.name.toLowerCase().includes('al kass') ||
-            c.name.toLowerCase().includes('vip bein sports')))
+function getNetworkDesign(name: string): NetworkDesign {
+  const n = name.toLowerCase();
+
+  if (n.includes('bein') || n.includes('be in')) {
+    return {
+      bgClass: 'bg-gradient-to-br from-[#4A1D7A] to-[#230B3D]',
+      logoHtml: (
+        <div className="text-center select-none">
+          <div className="text-2xl font-black tracking-tight leading-none text-white">beIN</div>
+          <div className="text-[10px] font-bold tracking-[0.2em] text-purple-200 mt-0.5">SPORTS</div>
+        </div>
       ),
-  },
-  {
-    id: 'sa',
-    label: 'Saudi Arabia (SSC)',
-    flag: '🇸🇦',
-    matcher: (c) =>
-      Boolean(
-        c.country === 'SA' ||
-        (c.category && c.category.toLowerCase().includes('saudi')) ||
-        c.name.toLowerCase().includes('ssc') ||
-        c.name.toLowerCase().includes('saudi')
+    };
+  }
+
+  if (n.includes('sky')) {
+    return {
+      bgClass: 'bg-gradient-to-b from-[#003399] via-[#002266] to-[#B80C24]',
+      logoHtml: (
+        <div className="text-center select-none">
+          <div className="text-2xl font-extrabold leading-none text-white">sky</div>
+          <div className="text-base font-semibold leading-none mt-0.5 text-white/90">sports</div>
+        </div>
       ),
-  },
-  {
-    id: 'ae',
-    label: 'UAE (AD Sports)',
-    flag: '🇦🇪',
-    matcher: (c) =>
-      Boolean(
-        c.country === 'UAE' ||
-        c.country === 'AE' ||
-        (c.category && c.category.toLowerCase().includes('uae')) ||
-        c.name.toLowerCase().includes('ad sports') ||
-        c.name.toLowerCase().includes('dubai') ||
-        c.name.toLowerCase().includes('sharjah') ||
-        c.name.toLowerCase().includes('abu dhabi')
+    };
+  }
+
+  if (n.includes('espn')) {
+    return {
+      bgClass: 'bg-gradient-to-br from-[#D00000] to-[#7A0000]',
+      logoHtml: <div className="text-2xl font-black italic tracking-tighter text-white select-none">ESPN</div>,
+    };
+  }
+
+  if (n.includes('eurosport')) {
+    return {
+      bgClass: 'bg-gradient-to-br from-[#0A1E46] to-[#050D21]',
+      logoHtml: <div className="text-sm font-black tracking-widest text-white select-none">★EUROSPORT</div>,
+    };
+  }
+
+  if (n.includes('canal')) {
+    return {
+      bgClass: 'bg-black',
+      logoHtml: <div className="text-base font-black tracking-wider text-white select-none">CANAL+</div>,
+    };
+  }
+
+  if (n.includes('dazn')) {
+    return {
+      bgClass: 'bg-[#0F0F10]',
+      logoHtml: (
+        <div className="border-2 border-white px-2 py-0.5 text-xs font-black leading-none tracking-tighter text-white text-center select-none">
+          DA<br />ZN
+        </div>
       ),
-  },
-  {
-    id: 'eg',
-    label: 'Egypt (ON Time)',
-    flag: '🇪🇬',
-    matcher: (c) =>
-      Boolean(
-        c.country === 'EG' ||
-        (c.category && c.category.toLowerCase().includes('egypt')) ||
-        c.name.toLowerCase().includes('on time') ||
-        c.name.toLowerCase().includes('dmc') ||
-        c.name.toLowerCase().includes('al hayah') ||
-        c.name.toLowerCase().includes('mbc masr') ||
-        c.name.toLowerCase().includes('al ahly') ||
-        c.name.toLowerCase().includes('zamalek')
-      ),
-  },
-  {
-    id: 'tn',
-    label: 'Tunisia & North Africa',
-    flag: '🇹🇳',
-    matcher: (c) =>
-      Boolean(
-        c.country === 'TN' ||
-        (c.category && c.category.toLowerCase().includes('tunisia')) ||
-        c.name.toLowerCase().includes('watania') ||
-        c.name.toLowerCase().includes('mosaique')
-      ),
-  },
-  {
-    id: 'uk',
-    label: 'United Kingdom (Sky & TNT)',
-    flag: '🇬🇧',
-    matcher: (c) =>
-      Boolean(
-        c.country === 'UK' ||
-        c.country === 'GB' ||
-        c.name.toLowerCase().endsWith(' uk') ||
-        (c.category && c.category.toLowerCase().includes('sports uk')) ||
-        (c.category && c.category.toLowerCase().includes('united kingdom')) ||
-        ((c.name.toLowerCase().includes('sky sport') ||
-          c.name.toLowerCase().includes('tnt') ||
-          c.name.toLowerCase().includes('bbc')) &&
-          !c.name.toLowerCase().includes('de') &&
-          !c.name.toLowerCase().includes('it') &&
-          !c.name.toLowerCase().includes('at') &&
-          !c.name.toLowerCase().includes('nz') &&
-          !c.name.toLowerCase().includes('us'))
-      ),
-  },
-  {
-    id: 'us',
-    label: 'USA (ESPN, NBC, CBS)',
-    flag: '🇺🇸',
-    matcher: (c) =>
-      Boolean(
-        c.country === 'US' ||
-        c.name.toLowerCase().endsWith(' us') ||
-        (c.category && c.category.toLowerCase().includes('united states')) ||
-        (c.category && c.category.toLowerCase().includes('sports us')) ||
-        c.name.toLowerCase().includes('espn') ||
-        c.name.toLowerCase().includes('fox sports') ||
-        c.name.toLowerCase().includes('mlb') ||
-        c.name.toLowerCase().includes('nba tv') ||
-        c.name.toLowerCase().includes('nfl network') ||
-        c.name.toLowerCase().includes('nhl network') ||
-        c.name.toLowerCase().includes('cbs') ||
-        c.name.toLowerCase().includes('nbc') ||
-        c.name.toLowerCase().includes('abc')
-      ),
-  },
-  {
-    id: 'fr',
-    label: 'France (Canal+ & RMC)',
-    flag: '🇫🇷',
-    matcher: (c) =>
-      Boolean(
-        c.country === 'FR' ||
-        c.name.toLowerCase().endsWith(' fr') ||
-        (c.category && c.category.toLowerCase().includes('france')) ||
-        c.name.toLowerCase().includes('rmc sport') ||
-        (c.name.toLowerCase().includes('canal+') &&
-          !c.name.toLowerCase().includes('pl') &&
-          !c.name.toLowerCase().includes('af') &&
-          !c.name.toLowerCase().includes('pt') &&
-          !c.name.toLowerCase().includes('mx'))
-      ),
-  },
-  {
-    id: 'es',
-    label: 'Spain (Movistar & DAZN)',
-    flag: '🇪🇸',
-    matcher: (c) =>
-      Boolean(
-        c.country === 'ES' ||
-        c.name.toLowerCase().endsWith(' es') ||
-        (c.category && c.category.toLowerCase().includes('spain')) ||
-        c.name.toLowerCase().includes('movistar') ||
-        c.name.toLowerCase().includes('laliga') ||
-        (c.name.toLowerCase().includes('dazn') &&
-          (c.name.toLowerCase().includes('es') ||
-            c.name.toLowerCase().includes('laliga') ||
-            c.name.toLowerCase().includes('f1')))
-      ),
-  },
-  {
-    id: 'de',
-    label: 'Germany (Sky & DAZN)',
-    flag: '🇩🇪',
-    matcher: (c) =>
-      Boolean(
-        c.country === 'DE' ||
-        c.name.toLowerCase().endsWith(' de') ||
-        (c.category && c.category.toLowerCase().includes('germany')) ||
-        c.name.toLowerCase().includes('bundesliga') ||
-        (c.name.toLowerCase().includes('sky sport') && c.name.toLowerCase().includes('de')) ||
-        (c.name.toLowerCase().includes('dazn') && c.name.toLowerCase().includes('de'))
-      ),
-  },
-  {
-    id: 'it',
-    label: 'Italy (Sky Sport IT)',
-    flag: '🇮🇹',
-    matcher: (c) =>
-      Boolean(
-        c.country === 'IT' ||
-        c.name.toLowerCase().endsWith(' it') ||
-        (c.category && c.category.toLowerCase().includes('italy')) ||
-        c.name.toLowerCase().includes('italia') ||
-        (c.name.toLowerCase().includes('sky sport') && c.name.toLowerCase().includes('italia'))
-      ),
-  },
-  {
-    id: 'dk',
-    label: 'Denmark (Viaplay & TV2)',
-    flag: '🇩🇰',
-    matcher: (c) =>
-      Boolean(
-        c.country === 'DK' ||
-        c.name.toLowerCase().endsWith(' dk') ||
-        (c.category && c.category.toLowerCase().includes('denmark')) ||
-        c.name.toLowerCase().includes('tv 2') ||
-        c.name.toLowerCase().includes('viaplay') ||
-        c.name.toLowerCase().includes('canal 9')
-      ),
-  },
-  {
-    id: 'int',
-    label: 'International',
-    flag: '🌐',
-    matcher: (c) =>
-      Boolean(
-        c.country === 'INT' ||
-        (c.category && c.category.toLowerCase().includes('international')) ||
-        (c.category && c.category.toLowerCase().includes('sports international'))
-      ),
-  },
-];
+    };
+  }
+
+  if (n.includes('ssc') || n.includes('saudi')) {
+    return {
+      bgClass: 'bg-gradient-to-br from-[#0B2518] to-[#04120A]',
+      logoHtml: <div className="text-xl font-black tracking-tight text-emerald-300 select-none">SSC</div>,
+    };
+  }
+
+  // Dynamic fallback
+  return {
+    bgClass: 'bg-gradient-to-br from-[#1C1C1E] to-[#121214]',
+    logoHtml: (
+      <div className="text-sm font-black tracking-wide text-white uppercase truncate px-2 text-center select-none">
+        {name.slice(0, 14)}
+      </div>
+    ),
+  };
+}
+
+const BATCH_SIZE = 40;
 
 export const ChannelsPage: React.FC = () => {
-  const { setActiveMedia } = useAppStore();
+  const { setActiveMedia, setIsSearchOpen, setCurrentTab, language } = useAppStore();
   const [channels, setChannels] = useState<ChannelItem[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<string>('all');
-  const [searchFilter, setSearchFilter] = useState('');
-  const [visibleCount, setVisibleCount] = useState(24);
+  const [filter, setFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [visibleCount, setVisibleCount] = useState<number>(BATCH_SIZE);
   const [isLoading, setIsLoading] = useState(true);
 
-  const observerTarget = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const isRTL = language === 'ar';
 
   useEffect(() => {
     async function load() {
@@ -240,61 +114,79 @@ export const ChannelsPage: React.FC = () => {
     load();
   }, []);
 
-  // Filter channels based on selected country and search input
+  const filterTabs = [
+    { id: 'all', label: `All (${channels.length || 478})`, labelAr: `الكل (${channels.length || 478})` },
+    { id: 'bein', label: 'beIN Sports', labelAr: 'بي إن سبورت' },
+    { id: 'sports-us', label: 'Sports US', labelAr: 'رياضة أمريكا' },
+    { id: 'sports-uk', label: 'Sports UK', labelAr: 'رياضة بريطانيا' },
+    { id: 'sports-int', label: 'International Sports', labelAr: 'رياضة عالمية' },
+    { id: 'entertainment', label: 'Entertainment', labelAr: 'ترفيه وأفلام' },
+    { id: 'news', label: 'News', labelAr: 'أخبار' },
+    { id: 'france', label: 'France', labelAr: 'فرنسا' },
+    { id: 'germany', label: 'Germany', labelAr: 'ألمانيا' },
+    { id: 'spain', label: 'Spain', labelAr: 'إسبانيا' },
+  ];
+
   const filteredChannels = useMemo(() => {
-    const activeFilter = COUNTRIES.find((c) => c.id === selectedCountry);
+    let list = channels;
 
-    return channels.filter((c) => {
-      let matchesCountry = true;
-      if (activeFilter && activeFilter.matcher) {
-        matchesCountry = activeFilter.matcher(c);
-      }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter((c) => c.name.toLowerCase().includes(q) || (c.category || '').toLowerCase().includes(q));
+    }
 
-      const q = searchFilter.trim().toLowerCase();
-      const catLower = (c.category || '').toLowerCase();
-      const nameLower = (c.name || '').toLowerCase();
+    if (filter === 'all') return list;
 
-      const matchesSearch =
-        !q ||
-        nameLower.includes(q) ||
-        (c.program && c.program.toLowerCase().includes(q)) ||
-        catLower.includes(q) ||
-        (c.country && c.country.toLowerCase().includes(q));
+    const f = filter.toLowerCase();
+    return list.filter((c) => {
+      const name = c.name.toLowerCase();
+      const cat = (c.category || '').toLowerCase();
 
-      return matchesCountry && matchesSearch;
+      if (f === 'bein') return name.includes('bein') || cat.includes('bein');
+      if (f === 'sports-us') return cat.includes('us') && cat.includes('sport');
+      if (f === 'sports-uk') return cat.includes('uk') && cat.includes('sport');
+      if (f === 'sports-int') return cat.includes('international') || (cat.includes('sport') && !cat.includes('us') && !cat.includes('uk'));
+      if (f === 'entertainment') return cat.includes('entertainment') || cat.includes('movie') || cat.includes('cinema');
+      if (f === 'news') return cat.includes('news') || name.includes('news') || name.includes('jazeera') || name.includes('arabia');
+      if (f === 'france') return cat.includes('france') || name.includes('canal');
+      if (f === 'germany') return cat.includes('germany') || cat.includes('deutsch');
+      if (f === 'spain') return cat.includes('spain') || name.includes('laliga');
+
+      return cat.includes(f) || name.includes(f);
     });
-  }, [channels, selectedCountry, searchFilter]);
+  }, [channels, filter, searchQuery]);
 
-  // Infinite Scroll IntersectionObserver
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const [target] = entries;
-      if (target.isIntersecting && visibleCount < filteredChannels.length) {
-        setVisibleCount((prev) => Math.min(prev + 24, filteredChannels.length));
-      }
-    },
-    [visibleCount, filteredChannels.length]
-  );
-
+  // Reset pagination when filter or search changes
   useEffect(() => {
-    const element = observerTarget.current;
-    if (!element) return;
+    setVisibleCount(BATCH_SIZE);
+  }, [filter, searchQuery]);
 
-    const observer = new IntersectionObserver(handleObserver, {
-      root: null,
-      rootMargin: '250px',
-      threshold: 0.1,
-    });
+  // Infinite Scroll Sentinel for Channels
+  useEffect(() => {
+    if (!sentinelRef.current) return;
 
-    observer.observe(element);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + BATCH_SIZE, filteredChannels.length));
+        }
+      },
+      { rootMargin: '400px' }
+    );
+
+    observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [handleObserver]);
+  }, [filteredChannels.length]);
+
+  const pagedChannels = useMemo(() => {
+    return filteredChannels.slice(0, visibleCount);
+  }, [filteredChannels, visibleCount]);
 
   const handlePlayChannel = (c: ChannelItem) => {
     setActiveMedia({
       id: c.id,
       title: c.name,
-      subtitle: c.program || `${c.category} • HD Live Stream`,
+      subtitle: c.program || `${c.category} • Live HD Stream`,
       type: 'channel',
       streamUrl: c.src,
       poster: c.resolvedLogo,
@@ -302,116 +194,142 @@ export const ChannelsPage: React.FC = () => {
     });
   };
 
-  const handleCountrySelect = (countryId: string) => {
-    setSelectedCountry(countryId);
-    setVisibleCount(24);
-  };
-
-  const visibleChannels = filteredChannels.slice(0, visibleCount);
-  const hasMore = visibleCount < filteredChannels.length;
-
   return (
-    <div className="px-4 md:px-8 py-5 space-y-5 select-none max-w-7xl mx-auto">
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl p-5 md:p-6 bg-gradient-to-r from-[#17192C] via-[#111322] to-[#0D0E18] border border-purple-500/25 shadow-2xl">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FF1838] to-[#990014] flex items-center justify-center shadow-[0_0_20px_rgba(255,24,56,0.55)] text-white shrink-0">
-              <Tv className="w-6 h-6 drop-shadow" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl md:text-2xl font-black text-white tracking-tight">
-                  Live Channels Directory
-                </h1>
-                <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-[#FF1838]/20 text-[#FF1838] border border-[#FF1838]/40">
-                  {channels.length} Channels Available
-                </span>
-              </div>
-              <p className="text-xs text-white/60 mt-0.5">
-                Direct high-definition sports and international television channels categorized by nation
-              </p>
-            </div>
+    <main className="min-h-screen bg-[#0B0B0B] text-white pb-32 pt-3 sm:pt-4 select-none" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="max-w-xl md:max-w-6xl mx-auto px-4">
+        {/* Header */}
+        <div className="flex items-center justify-between pt-1 pb-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              {isRTL ? 'القنوات' : 'Channels'}
+            </h1>
+            <p className="text-xs text-neutral-400 mt-0.5">
+              {filteredChannels.length} {isRTL ? 'قناة متوفرة بدقة عالية' : 'channels available in HD'}
+            </p>
           </div>
 
-          {/* Quick Search */}
-          <div className="relative w-full md:w-80">
-            <input
-              type="text"
-              value={searchFilter}
-              onChange={(e) => {
-                setSearchFilter(e.target.value);
-                setVisibleCount(24);
-              }}
-              placeholder="Search channel (beIN, Sky, SSC, ESPN, Canal...)"
-              className="w-full h-10 pr-4 pl-9 rounded-2xl bg-[#090A12] border border-white/10 text-xs text-white placeholder-white/40 focus:border-[#FF1838] focus:outline-none transition-colors"
-            />
-            <Search className="absolute right-3 top-3 w-4 h-4 text-white/40" />
-          </div>
-        </div>
-      </div>
-
-      {/* Country Filter Chips with Flags */}
-      <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1.5">
-        {COUNTRIES.map((item) => {
-          const isSelected = selectedCountry === item.id;
-          return (
+          <div className="flex items-center gap-2.5 text-neutral-300">
             <button
-              key={item.id}
-              onClick={() => handleCountrySelect(item.id)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer select-none active:scale-95 ${
-                isSelected
-                  ? 'bg-[#FF1838] text-white shadow-[0_0_14px_rgba(255,24,56,0.55)] border border-[#FF1838]'
-                  : 'bg-[#12131D] text-white/70 hover:text-white border border-white/10 hover:border-white/20'
-              }`}
+              type="button"
+              onClick={() => setIsSearchOpen(true)}
+              className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
+              title="Search"
             >
-              <span className="text-sm">{item.flag}</span>
-              <span>{item.label}</span>
+              <Search className="w-4 h-4 text-white" />
             </button>
-          );
-        })}
-      </div>
-
-      {/* Channels Grid with Infinite Scroll */}
-      {isLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-4">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="h-44 rounded-2xl bg-white/5 animate-pulse" />
-          ))}
+            <button
+              type="button"
+              onClick={() => setCurrentTab('settings')}
+              className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
+              title="Profile / Settings"
+            >
+              <User className="w-4 h-4 text-white" />
+            </button>
+          </div>
         </div>
-      ) : filteredChannels.length > 0 ? (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-4">
-            {visibleChannels.map((channel) => (
-              <div key={channel.id} className="w-full">
-                <ChannelCard
-                  channel={channel}
-                  className="w-full"
-                  onPlay={handlePlayChannel}
-                />
-              </div>
+
+        {/* Filter Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-4 pt-1" aria-label="Channel Filters">
+          {filterTabs.map((t) => {
+            const isActive = filter === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setFilter(t.id)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#E50914] text-white shadow-md'
+                    : 'bg-[#1C1C1E] text-neutral-300 hover:bg-white/10 border border-white/5 font-semibold'
+                }`}
+              >
+                {isRTL ? t.labelAr : t.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Channels Grid */}
+        {isLoading && channels.length === 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="h-44 rounded-2xl bg-[#141414] border border-white/5 animate-pulse" />
             ))}
           </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {pagedChannels.map((ch, idx) => {
+              const design = getNetworkDesign(ch.name);
+              const viewersCount = (300 + ((idx * 37) % 550)).toString() + 'K watching';
 
-          {/* Infinite Scroll Bottom Sentinel */}
-          <div ref={observerTarget} className="h-12 flex items-center justify-center">
-            {hasMore ? (
-              <div className="flex items-center gap-2 text-xs text-white/50 animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-[#FF1838]" />
-                <span>Loading more channels automatically ({filteredChannels.length - visibleCount} remaining)...</span>
-              </div>
-            ) : (
-              <span className="text-[11px] text-white/30 font-medium">All channels in this category displayed ({filteredChannels.length})</span>
-            )}
+              return (
+                <div
+                  key={ch.id}
+                  className="bg-[#141414] border border-white/10 rounded-2xl overflow-hidden flex flex-col justify-between transition-all hover:border-white/25 group t-card"
+                >
+                  {/* Top Network Logo Banner (h-24) */}
+                  <div
+                    onClick={() => handlePlayChannel(ch)}
+                    className={`h-24 ${design.bgClass} flex items-center justify-center p-3 relative cursor-pointer group-hover:brightness-110 transition-all`}
+                  >
+                    {ch.resolvedLogo ? (
+                      <img
+                        src={ch.resolvedLogo}
+                        alt={ch.name}
+                        loading="lazy"
+                        className="max-h-14 max-w-[85%] object-contain drop-shadow-md group-hover:scale-105 transition duration-200"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      design.logoHtml
+                    )}
+
+                    {/* Red • LIVE badge with animated ping dot */}
+                    <span className="absolute bottom-2 left-2 bg-[#E50914] text-white text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded flex items-center gap-1 shadow">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                      LIVE
+                    </span>
+                  </div>
+
+                  {/* Channel Details */}
+                  <div className="p-3">
+                    <h3
+                      onClick={() => handlePlayChannel(ch)}
+                      className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-[#E50914] transition-colors cursor-pointer"
+                    >
+                      {ch.name}
+                    </h3>
+                    <p className="text-[10px] text-neutral-400 mt-0.5 truncate">
+                      {viewersCount}
+                    </p>
+
+                    {/* Red Watch Button */}
+                    <button
+                      type="button"
+                      onClick={() => handlePlayChannel(ch)}
+                      className="w-full mt-2.5 bg-[#E50914] hover:bg-[#F40612] text-white font-bold text-xs py-1.5 rounded-lg transition-all active:scale-95 shadow cursor-pointer t-btn-press"
+                    >
+                      {isRTL ? 'مشاهدة' : 'Watch'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+        )}
+
+        {/* Sentinel for infinite loading of all 478 channels */}
+        <div ref={sentinelRef} className="py-4 text-center">
+          {visibleCount < filteredChannels.length && (
+            <div className="flex items-center justify-center gap-2 text-xs text-neutral-400">
+              <Loader2 className="w-4 h-4 animate-spin text-[#E50914]" />
+              <span>{isRTL ? 'جاري عرض المزيد من القنوات...' : 'Loading more channels...'}</span>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="p-12 text-center rounded-3xl bg-[#12131D] border border-white/10 space-y-3">
-          <Tv className="w-12 h-12 text-white/30 mx-auto" />
-          <h3 className="text-base font-bold text-white">No matching channels found</h3>
-          <p className="text-xs text-white/50">Make sure the channel name is spelled correctly or select another country flag.</p>
-        </div>
-      )}
-    </div>
+      </div>
+    </main>
   );
 };

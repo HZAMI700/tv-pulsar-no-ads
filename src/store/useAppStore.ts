@@ -1,5 +1,15 @@
 import { create } from 'zustand';
-import { ActiveMedia, NavigationTab, WatchHistoryItem, EpisodeWatchProgress } from '../types';
+import { ActiveMedia, NavigationTab, WatchHistoryItem, EpisodeWatchProgress, VidApiMovie, VidApiTvShow } from '../types';
+
+export interface ActiveDetail {
+  type: 'movie' | 'tv';
+  movieId?: string;
+  seriesId?: string;
+  movie?: VidApiMovie;
+  series?: VidApiTvShow;
+  selectedSeason?: number;
+  fromTab?: NavigationTab;
+}
 
 interface AppState {
   currentTab: NavigationTab;
@@ -8,6 +18,13 @@ interface AppState {
   activeMedia: ActiveMedia | null;
   setActiveMedia: (media: ActiveMedia | null) => void;
   closePlayer: () => void;
+
+  // Active Detail Page Stack (Movie & Series Details Screen)
+  activeDetail: ActiveDetail | null;
+  openMovieDetail: (movie: VidApiMovie, fromTab?: NavigationTab) => void;
+  openSeriesDetail: (series: VidApiTvShow, seasonNumber?: number, fromTab?: NavigationTab) => void;
+  closeDetail: () => void;
+  setDetailSeason: (seasonNumber: number) => void;
 
   heroMedia: ActiveMedia | null;
   setHeroMedia: (media: ActiveMedia | null) => void;
@@ -145,6 +162,39 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ activeMedia: media });
   },
   closePlayer: () => set({ activeMedia: null }),
+
+  // Centralized Detail Page Stack
+  activeDetail: null,
+  openMovieDetail: (movie, fromTab) =>
+    set({
+      activeDetail: {
+        type: 'movie',
+        movieId: movie.tmdb_id,
+        movie,
+        fromTab: fromTab || get().currentTab,
+      },
+    }),
+  openSeriesDetail: (series, seasonNumber = 1, fromTab) =>
+    set({
+      activeDetail: {
+        type: 'tv',
+        seriesId: series.tmdb_id,
+        series,
+        selectedSeason: seasonNumber,
+        fromTab: fromTab || get().currentTab,
+      },
+    }),
+  closeDetail: () => set({ activeDetail: null }),
+  setDetailSeason: (seasonNumber) =>
+    set((state) => {
+      if (!state.activeDetail || state.activeDetail.type !== 'tv') return state;
+      return {
+        activeDetail: {
+          ...state.activeDetail,
+          selectedSeason: seasonNumber,
+        },
+      };
+    }),
 
   heroMedia: null,
   setHeroMedia: (media) => set({ heroMedia: media }),

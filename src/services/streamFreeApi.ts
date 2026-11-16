@@ -57,14 +57,20 @@ export const TEAM_LOGO_MAP: Record<string, string> = {
   milan: 'https://a.espncdn.com/i/teamlogos/soccer/500/103.png',
   'ac milan': 'https://a.espncdn.com/i/teamlogos/soccer/500/103.png',
   juventus: 'https://a.espncdn.com/i/teamlogos/soccer/500/111.png',
-  roma: 'https://a.espncdn.com/i/teamlogos/soccer/500/105.png',
+  roma: 'https://a.espncdn.com/i/teamlogos/soccer/500/104.png',
   lazio: 'https://a.espncdn.com/i/teamlogos/soccer/500/112.png',
   napoli: 'https://a.espncdn.com/i/teamlogos/soccer/500/114.png',
-  atalanta: 'https://a.espncdn.com/i/teamlogos/soccer/500/104.png',
+  atalanta: 'https://a.espncdn.com/i/teamlogos/soccer/500/105.png',
   fiorentina: 'https://a.espncdn.com/i/teamlogos/soccer/500/109.png',
-  monza: 'https://a.espncdn.com/i/teamlogos/soccer/500/2729.png',
+  monza: 'https://a.espncdn.com/i/teamlogos/soccer/500/4007.png',
   genoa: 'https://a.espncdn.com/i/teamlogos/soccer/500/3263.png',
-  sassuolo: 'https://a.espncdn.com/i/teamlogos/soccer/500/398.png',
+  sassuolo: 'https://a.espncdn.com/i/teamlogos/soccer/500/3997.png',
+  torino: 'https://a.espncdn.com/i/teamlogos/soccer/500/239.png',
+  udinese: 'https://a.espncdn.com/i/teamlogos/soccer/500/118.png',
+  lecce: 'https://a.espncdn.com/i/teamlogos/soccer/500/113.png',
+  cagliari: 'https://a.espncdn.com/i/teamlogos/soccer/500/2925.png',
+  como: 'https://a.espncdn.com/i/teamlogos/soccer/500/2572.png',
+  venezia: 'https://a.espncdn.com/i/teamlogos/soccer/500/17530.png',
   // La Liga
   'real madrid': 'https://a.espncdn.com/i/teamlogos/soccer/500/86.png',
   barcelona: 'https://a.espncdn.com/i/teamlogos/soccer/500/83.png',
@@ -72,19 +78,55 @@ export const TEAM_LOGO_MAP: Record<string, string> = {
   'real betis': 'https://a.espncdn.com/i/teamlogos/soccer/500/244.png',
   betis: 'https://a.espncdn.com/i/teamlogos/soccer/500/244.png',
   elche: 'https://a.espncdn.com/i/teamlogos/soccer/500/3751.png',
-  // Bundesliga / Ligue 1
+  sevilla: 'https://a.espncdn.com/i/teamlogos/soccer/500/243.png',
+  valencia: 'https://a.espncdn.com/i/teamlogos/soccer/500/94.png',
+  villarreal: 'https://a.espncdn.com/i/teamlogos/soccer/500/102.png',
+  'athletic club': 'https://a.espncdn.com/i/teamlogos/soccer/500/96.png',
+  'athletic bilbao': 'https://a.espncdn.com/i/teamlogos/soccer/500/96.png',
+  'real sociedad': 'https://a.espncdn.com/i/teamlogos/soccer/500/89.png',
+  // Bundesliga / Ligue 1 / Others
   'bayern munich': 'https://a.espncdn.com/i/teamlogos/soccer/500/132.png',
   dortmund: 'https://a.espncdn.com/i/teamlogos/soccer/500/124.png',
+  'borussia dortmund': 'https://a.espncdn.com/i/teamlogos/soccer/500/124.png',
+  'bayer leverkusen': 'https://a.espncdn.com/i/teamlogos/soccer/500/131.png',
+  leverkusen: 'https://a.espncdn.com/i/teamlogos/soccer/500/131.png',
+  'rb leipzig': 'https://a.espncdn.com/i/teamlogos/soccer/500/11420.png',
   psg: 'https://a.espncdn.com/i/teamlogos/soccer/500/160.png',
   'paris saint-germain': 'https://a.espncdn.com/i/teamlogos/soccer/500/160.png',
   lille: 'https://a.espncdn.com/i/teamlogos/soccer/500/166.png',
   rennes: 'https://a.espncdn.com/i/teamlogos/soccer/500/169.png',
   'stade rennais': 'https://a.espncdn.com/i/teamlogos/soccer/500/169.png',
+  marseille: 'https://a.espncdn.com/i/teamlogos/soccer/500/164.png',
+  monaco: 'https://a.espncdn.com/i/teamlogos/soccer/500/174.png',
+  lyon: 'https://a.espncdn.com/i/teamlogos/soccer/500/167.png',
+  porto: 'https://a.espncdn.com/i/teamlogos/soccer/500/437.png',
+  'fc porto': 'https://a.espncdn.com/i/teamlogos/soccer/500/437.png',
+  benfica: 'https://a.espncdn.com/i/teamlogos/soccer/500/1929.png',
+  'sporting cp': 'https://a.espncdn.com/i/teamlogos/soccer/500/2250.png',
+  sporting: 'https://a.espncdn.com/i/teamlogos/soccer/500/2250.png',
+  ajax: 'https://a.espncdn.com/i/teamlogos/soccer/500/139.png',
+  feyenoord: 'https://a.espncdn.com/i/teamlogos/soccer/500/141.png',
+  psv: 'https://a.espncdn.com/i/teamlogos/soccer/500/148.png',
+  galatasaray: 'https://a.espncdn.com/i/teamlogos/soccer/500/432.png',
+  besiktas: 'https://a.espncdn.com/i/teamlogos/soccer/500/433.png',
   // Arab Clubs
-  'al hilal': 'https://a.espncdn.com/i/teamlogos/soccer/500/7318.png',
-  'al nassr': 'https://a.espncdn.com/i/teamlogos/soccer/500/7322.png',
-  'al ahly': 'https://a.espncdn.com/i/teamlogos/soccer/500/3074.png',
-  zamalek: 'https://a.espncdn.com/i/teamlogos/soccer/500/3077.png',
+  'al hilal': 'https://a.espncdn.com/i/teamlogos/soccer/500/929.png',
+  'al nassr': 'https://a.espncdn.com/i/teamlogos/soccer/500/817.png',
+  'al ittihad': 'https://a.espncdn.com/i/teamlogos/soccer/500/2276.png',
+  'al ahli': 'https://a.espncdn.com/i/teamlogos/soccer/500/8346.png',
+  'al shabab': 'https://a.espncdn.com/i/teamlogos/soccer/500/793.png',
+  'al ettifaq': 'https://a.espncdn.com/i/teamlogos/soccer/500/8363.png',
+  'al ahly': 'https://a.espncdn.com/i/teamlogos/soccer/500/10207.png',
+  'al ain': 'https://a.espncdn.com/i/teamlogos/soccer/500/7128.png',
+  'esperance': 'https://a.espncdn.com/i/teamlogos/soccer/500/8377.png',
+  'wydad': 'https://a.espncdn.com/i/teamlogos/soccer/500/8625.png',
+  // Americas
+  'inter miami': 'https://a.espncdn.com/i/teamlogos/soccer/500/20232.png',
+  'inter miami cf': 'https://a.espncdn.com/i/teamlogos/soccer/500/20232.png',
+  'boca juniors': 'https://a.espncdn.com/i/teamlogos/soccer/500/5.png',
+  'river plate': 'https://a.espncdn.com/i/teamlogos/soccer/500/16.png',
+  flamengo: 'https://a.espncdn.com/i/teamlogos/soccer/500/819.png',
+  palmeiras: 'https://a.espncdn.com/i/teamlogos/soccer/500/2029.png',
   // NBA Teams
   'phoenix suns': 'https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/phx.png',
   'golden state warriors': 'https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/gs.png',
@@ -121,12 +163,14 @@ export const LEAGUE_BADGE_MAP: Record<string, string> = {
   'ligue 1': 'https://a.espncdn.com/i/leaguelogos/soccer/500/9.png',
   'nba': 'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png',
   'nfl': 'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png',
-  'ncaaf': 'https://a.espncdn.com/i/teamlogos/ncaa/500/scoreboard/ncaa.png',
-  'ncaa': 'https://a.espncdn.com/i/teamlogos/ncaa/500/scoreboard/ncaa.png',
-  'fa cup': 'https://a.espncdn.com/i/leaguelogos/soccer/500/1000.png',
-  'facup': 'https://a.espncdn.com/i/leaguelogos/soccer/500/1000.png',
-  'ufc': 'https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-mma.png&w=100&h=100',
-  'f1': 'https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-f1.png&w=100&h=100',
+  'ncaaf': 'https://a.espncdn.com/redesign/assets/img/icons/NCAASports_Football.png',
+  'ncaa': 'https://a.espncdn.com/redesign/assets/img/icons/NCAASports_MensBasketball.png',
+  'fa cup': 'https://a.espncdn.com/i/leaguelogos/soccer/500/40.png',
+  'facup': 'https://a.espncdn.com/i/leaguelogos/soccer/500/40.png',
+  'english fa cup': 'https://a.espncdn.com/i/leaguelogos/soccer/500/40.png',
+  'ufc': 'https://a.espncdn.com/i/teamlogos/leagues/500/ufc.png',
+  'f1': 'https://a.espncdn.com/i/teamlogos/leagues/500/f1.png',
+  'formula 1': 'https://a.espncdn.com/i/teamlogos/leagues/500/f1.png',
 };
 
 export function resolveLeagueBadge(leagueName?: string, category?: string): string | undefined {
@@ -304,22 +348,14 @@ export function buildMatchServers(
   rawSources?: RawStreamFreeSource[]
 ): MatchServer[] {
   const cat = category || 'soccer';
-  const servers: MatchServer[] = [];
+  const rawList: Array<{ id: string; quality: string; url: string; isLive: boolean }> = [];
 
   // 1. Process sources provided by the API
   if (rawSources && rawSources.length > 0) {
     rawSources.forEach((src, idx) => {
       const q = (src.quality || 'HD').toUpperCase();
-      const isFHD = q.includes('1080') || q.includes('FHD');
-      const isSD = q.includes('540') || q.includes('SD') || q.includes('480');
-      
-      let serverLabel = `Server ${idx + 1} (${q})`;
-      if (isFHD) serverLabel = `Server 1 (FHD 1080p)`;
-      else if (isSD) serverLabel = `Server 2 (SD 540p)`;
-
-      servers.push({
+      rawList.push({
         id: `api-src-${idx}`,
-        name: serverLabel,
         quality: q,
         url: src.url,
         isLive: Boolean(src.live),
@@ -328,13 +364,12 @@ export function buildMatchServers(
   }
 
   // 2. Add fallback canonical embeds if not already present
-  const hasFhd = servers.some((s) => s.quality.includes('1080') || s.quality.includes('FHD'));
-  const hasSd = servers.some((s) => s.quality.includes('540') || s.quality.includes('SD'));
+  const hasFhd = rawList.some((s) => s.quality.includes('1080') || s.quality.includes('FHD'));
+  const hasSd = rawList.some((s) => s.quality.includes('540') || s.quality.includes('SD'));
 
   if (!hasFhd) {
-    servers.unshift({
+    rawList.unshift({
       id: 'fhd-canonical',
-      name: `Server 1 (FHD 1080p)`,
       quality: 'FHD',
       url: `${STRMFREE_EMBED_BASE}/embed/${cat}/${streamKey}1080p`,
       isLive: false,
@@ -342,21 +377,19 @@ export function buildMatchServers(
   }
 
   if (!hasSd) {
-    servers.push({
+    rawList.push({
       id: 'sd-canonical',
-      name: `Server 2 (SD 540p)`,
       quality: 'SD',
       url: `${STRMFREE_EMBED_BASE}/embed/${cat}/${streamKey}540p`,
       isLive: false,
     });
   }
 
-  // 3. Add High-Stability CDN Mirror
+  // 3. Add High-Stability Mirror
   const cdnMirrorUrl = `${STREAMFREE_BASE}/embed/${cat}/${streamKey}`;
-  if (!servers.some((s) => s.url === cdnMirrorUrl)) {
-    servers.push({
+  if (!rawList.some((s) => s.url === cdnMirrorUrl)) {
+    rawList.push({
       id: 'cdn-mirror',
-      name: `Server 3 (StreamFree CDN)`,
       quality: 'HD',
       url: cdnMirrorUrl,
       isLive: true,
@@ -365,17 +398,23 @@ export function buildMatchServers(
 
   // 4. Add Backup Mirror
   const backupMirrorUrl = `${STRMFREE_EMBED_BASE}/embed/${cat}/${streamKey}`;
-  if (!servers.some((s) => s.url === backupMirrorUrl)) {
-    servers.push({
+  if (!rawList.some((s) => s.url === backupMirrorUrl)) {
+    rawList.push({
       id: 'backup-mirror',
-      name: `Server 4 (Backup Server)`,
       quality: 'Auto',
       url: backupMirrorUrl,
       isLive: true,
     });
   }
 
-  return servers;
+  // Standardize naming strictly to "Server 1", "Server 2", etc.
+  return rawList.map((item, idx) => ({
+    id: item.id,
+    name: `Server ${idx + 1}`,
+    quality: item.quality,
+    url: item.url,
+    isLive: item.isLive,
+  }));
 }
 
 /**

@@ -33,13 +33,13 @@ const CURATED_COLLECTIONS = [
     year: '2024',
   },
   {
-    id: 'after',
-    title: 'After Collection',
-    subtitle: 'Romantic Saga',
-    poster: 'https://image.tmdb.org/t/p/w500/yzDuAQCY2n6zzOlBkn6JzhLhY3k.jpg',
-    backdrop: 'https://image.tmdb.org/t/p/original/k22XyPbce7zvzzf5OnT4uaY8ZD1.jpg',
-    query: 'After',
-    year: '2023',
+    id: 'mission',
+    title: 'Mission: Impossible Collection',
+    subtitle: 'Spy Action Adrenaline',
+    poster: 'https://image.tmdb.org/t/p/w500/NNxYkU70HPurnNCSiCjYAmacwm.jpg',
+    backdrop: 'https://image.tmdb.org/t/p/original/628Dep6AxEtDxjZoGP78TsOxYbK.jpg',
+    query: 'Mission Impossible',
+    year: '2024',
   },
   {
     id: '300',
@@ -123,6 +123,8 @@ export const DiscoverPage: React.FC = () => {
     toggleFavorite,
     watchHistory,
     removeFromWatchHistory,
+    openMovieDetail,
+    openSeriesDetail,
   } = useAppStore();
 
   const [activeTab, setActiveTab] = useState<'movies' | 'tv'>('movies');
@@ -150,10 +152,6 @@ export const DiscoverPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
-
-  // Modals
-  const [selectedMovie, setSelectedMovie] = useState<VidApiMovie | null>(null);
-  const [selectedSeries, setSelectedSeries] = useState<VidApiTvShow | null>(null);
 
   const sentinelRef = useRef<HTMLDivElement>(null);
   const activeGenres = activeTab === 'movies' ? MOVIE_GENRES : TV_GENRES;
@@ -320,16 +318,10 @@ export const DiscoverPage: React.FC = () => {
 
   const handleSelectMedia = (item: VidApiMovie | VidApiTvShow) => {
     if (item.type === 'movie') {
-      setSelectedMovie(item as VidApiMovie);
+      openMovieDetail(item as VidApiMovie, 'movies');
     } else {
-      setSelectedSeries(item as VidApiTvShow);
+      openSeriesDetail(item as VidApiTvShow, 1, 'movies');
     }
-  };
-
-  const handlePlayFromModal = (media: ActiveMedia) => {
-    setSelectedMovie(null);
-    setSelectedSeries(null);
-    setActiveMedia(media);
   };
 
   const handleResumeHistory = (item: WatchHistoryItem) => {
@@ -472,9 +464,9 @@ export const DiscoverPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Immersive Hero Spotlight Banner (Top Slider Cards) */}
+      {/* 2. Netflix Immersive Hero Billboard */}
       {!searchQuery && !heroItem && (
-        <div className="relative w-full h-[50vh] sm:h-[58vh] max-h-[520px] overflow-hidden bg-[#10121F] animate-pulse flex flex-col justify-end p-6">
+        <div className="relative w-full h-[52vh] sm:h-[62vh] max-h-[580px] overflow-hidden bg-[#141414] animate-pulse flex flex-col justify-end p-6">
           <div className="max-w-md space-y-3 mx-auto text-center flex flex-col items-center">
             <div className="h-8 w-48 bg-white/10 rounded-xl" />
             <div className="h-4 w-24 bg-white/10 rounded-lg" />
@@ -487,29 +479,53 @@ export const DiscoverPage: React.FC = () => {
       )}
 
       {!searchQuery && heroItem && (
-        <div className="relative w-full h-[52vh] sm:h-[60vh] max-h-[560px] overflow-hidden bg-black transition-all duration-300">
+        <div className="relative w-full h-[54vh] sm:h-[64vh] max-h-[600px] overflow-hidden bg-[#141414] transition-all duration-300">
           <img
             src={heroItem.backdrop_url || heroItem.poster_url}
             alt={heroItem.title}
             className="w-full h-full object-cover object-center filter brightness-90 transition-transform duration-1000 ease-out"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#07080D] via-[#07080D]/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#07080D]/80 via-transparent to-transparent" />
+          {/* Netflix Gradients */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#141414]/90 via-[#141414]/40 to-transparent" />
 
           {/* Hero Content Overlay */}
-          <div className="absolute bottom-5 sm:bottom-8 left-4 sm:left-8 right-4 sm:right-8 z-10 flex flex-col items-center text-center space-y-3">
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-xl max-w-2xl line-clamp-2">
+          <div className="absolute bottom-6 sm:bottom-10 left-4 sm:left-10 right-4 sm:right-10 z-10 flex flex-col items-start text-left space-y-3 max-w-2xl">
+            {/* Netflix Series / Film Badge */}
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded text-[10px] font-black tracking-widest bg-[#E50914] text-white shadow-md">
+                {heroItem.type === 'tv' ? 'N SERIES' : 'N FILM'}
+              </span>
+              <span className="text-[11px] font-black text-[#FF1838] uppercase tracking-wider flex items-center gap-1 drop-shadow">
+                <span>🔥 #1 IN {heroItem.type === 'tv' ? 'SERIES' : 'MOVIES'} TODAY</span>
+              </span>
+            </div>
+
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] line-clamp-2">
               {heroItem.title}
             </h1>
-            <span className="text-xs sm:text-sm text-white/80 font-bold drop-shadow">
-              {heroItem.year || '2026'}
-            </span>
 
-            {/* Side-by-side Play & Information buttons */}
-            <div className="flex items-center justify-center gap-3 pt-1">
+            {/* Netflix Metadata Row */}
+            <div className="flex items-center gap-2.5 text-xs sm:text-sm font-bold text-white/90 drop-shadow">
+              <span className="text-[#46d369] font-black">98% Match</span>
+              <span>{heroItem.year || '2026'}</span>
+              <span className="px-1.5 py-0.2 rounded border border-white/40 text-[10px] font-bold">16+</span>
+              <span className="px-1.5 py-0.2 rounded border border-white/40 text-[10px] font-black">Ultra HD 4K</span>
+              <span className="text-white/60">• {heroItem.genre || 'Action'}</span>
+            </div>
+
+            {/* Synopsis snippet */}
+            {heroItem.overview && (
+              <p className="text-xs sm:text-sm text-white/80 line-clamp-2 drop-shadow max-w-xl">
+                {heroItem.overview}
+              </p>
+            )}
+
+            {/* Netflix Play & Info buttons */}
+            <div className="flex items-center gap-3 pt-1">
               <button
                 onClick={handlePlayHero}
-                className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl bg-white hover:bg-white/90 text-black font-black text-xs sm:text-sm flex items-center gap-2 shadow-xl active:scale-95 transition-all cursor-pointer motion-press"
+                className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg bg-white hover:bg-white/90 text-black font-black text-xs sm:text-sm flex items-center gap-2 shadow-xl active:scale-95 transition-all cursor-pointer motion-press"
               >
                 <Play className="w-4 h-4 fill-black text-black" />
                 <span>Play</span>
@@ -517,23 +533,23 @@ export const DiscoverPage: React.FC = () => {
 
               <button
                 onClick={() => handleSelectMedia(heroItem)}
-                className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-[#2A2A2A]/80 hover:bg-[#3A3A3A] text-white font-bold text-xs sm:text-sm flex items-center gap-2 backdrop-blur-md active:scale-95 transition-all cursor-pointer border border-white/10 motion-press"
+                className="px-5 sm:px-7 py-2.5 sm:py-3 rounded-lg bg-[#6d6d6e]/75 hover:bg-[#6d6d6e]/50 text-white font-bold text-xs sm:text-sm flex items-center gap-2 backdrop-blur-md active:scale-95 transition-all cursor-pointer motion-press"
               >
                 <Info className="w-4 h-4 text-white" />
-                <span>Information</span>
+                <span>More Info</span>
               </button>
             </div>
 
             {/* Carousel indicator dots */}
-            <div className="flex items-center justify-center gap-2 pt-2">
+            <div className="flex items-center gap-2 pt-2">
               {[0, 1, 2, 3, 4].map((idx) => (
                 <button
                   key={idx}
                   onClick={() => setHeroIndex(idx)}
-                  className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                  className={`h-1 rounded-full transition-all cursor-pointer ${
                     heroIndex % 5 === idx
-                      ? 'w-6 bg-[#E50914] shadow-[0_0_8px_#E50914]'
-                      : 'w-1.5 bg-white/40 hover:bg-white/70'
+                      ? 'w-6 bg-[#E50914]'
+                      : 'w-2 bg-white/40 hover:bg-white/70'
                   }`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
@@ -562,12 +578,20 @@ export const DiscoverPage: React.FC = () => {
               const m = Math.floor(sec / 60);
               const s = Math.floor(sec % 60);
               const timeDisplay = `${m}:${s < 10 ? '0' : ''}${s}`;
+              const progressPct = Math.min(100, Math.max(8, ((item.timestamp || 0) / (item.duration || 3600)) * 100));
 
               return (
                 <div
                   key={item.id}
                   onClick={() => handleResumeHistory(item)}
-                  className="group relative w-[150px] sm:w-[175px] aspect-[16/9] rounded-2xl overflow-hidden bg-[#12131D] border border-white/15 hover:border-[#FF1838]/80 cursor-pointer shrink-0 t-card shadow-lg active:scale-96 transition-all"
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    if (window.confirm(`Remove "${item.tvMeta?.showTitle || item.title}" from Continue Watching?`)) {
+                      removeFromWatchHistory(item.id);
+                    }
+                  }}
+                  className="group relative w-[165px] sm:w-[195px] aspect-[16/9] rounded-[14px] overflow-hidden bg-[#131620] border border-white/8 hover:border-white/25 cursor-pointer shrink-0 shadow-lg active:scale-97 transition-all"
+                  title="Click to resume • Long-press / right-click to remove"
                 >
                   <img
                     src={
@@ -578,45 +602,32 @@ export const DiscoverPage: React.FC = () => {
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent flex flex-col justify-end p-2">
-                    <span className="text-[11px] font-bold text-white truncate drop-shadow">
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#090A0F] via-[#090A0F]/60 to-transparent flex flex-col justify-end p-2.5 pb-2">
+                    <span className="text-[12px] font-semibold text-[#F8FAFC] truncate drop-shadow">
                       {item.tvMeta?.showTitle || item.title}
                     </span>
-                    <div className="flex items-center justify-between text-[9px] text-white/80 mt-0.5">
-                      <span className="text-[#00E676] font-bold flex items-center gap-1">
-                        <RotateCcw className="w-2.5 h-2.5 text-[#00E676]" />
+                    <div className="flex items-center justify-between text-[10px] text-[#94A3B8] mt-0.5">
+                      <span className="text-[#10B981] font-semibold flex items-center gap-1">
+                        <RotateCcw className="w-2.5 h-2.5 text-[#10B981]" />
                         <span>
                           {item.tvMeta?.season && item.tvMeta?.episode
                             ? `S${item.tvMeta.season}:E${item.tvMeta.episode} (${timeDisplay})`
                             : `min ${m}`}
                         </span>
                       </span>
-                      <span className="px-1 py-0.2 rounded bg-black/60 text-[8px] font-bold text-white/70">
+                      <span className="px-1.5 py-0.2 rounded bg-[#1E2230] text-[9px] font-bold text-[#94A3B8] border border-white/8">
                         {item.type === 'tv' ? 'Series' : 'Movie'}
                       </span>
                     </div>
-                    {/* Progress Bar */}
-                    <div className="w-full h-1 rounded-full bg-white/20 mt-1.5 overflow-hidden">
-                      <div
-                        className="h-full bg-[#FF1838] rounded-full"
-                        style={{
-                          width: `${Math.min(100, Math.max(10, ((item.timestamp || 0) / (item.duration || 3600)) * 100))}%`,
-                        }}
-                      />
-                    </div>
                   </div>
 
-                  {/* Remove button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeFromWatchHistory(item.id);
-                    }}
-                    className="absolute top-1.5 left-1.5 p-1 rounded-full bg-black/70 hover:bg-[#FF1838] text-white/70 hover:text-white transition-colors"
-                    title="Remove from history"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
+                  {/* Flush 3dp #FF2A4B progress bar anchored along bottom edge (rgba(255,255,255,0.15) track) */}
+                  <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/15 overflow-hidden">
+                    <div
+                      className="h-full bg-[#FF2A4B] shadow-[0_0_6px_#FF2A4B] transition-all"
+                      style={{ width: `${progressPct}%` }}
+                    />
+                  </div>
                 </div>
               );
             })}
@@ -676,6 +687,49 @@ export const DiscoverPage: React.FC = () => {
       {/* 5. RAILS VIEW: Collections, Trending, Top Rated (Matching Screenshot 2 & 3) */}
       {viewMode === 'rails' && !searchQuery && (
         <div className="space-y-6 pt-2">
+          {/* Rail 0: Netflix Signature Top 10 Today Rail */}
+          <section className="space-y-3">
+            <div className="flex items-center justify-between px-4 md:px-8">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-4 bg-[#E50914] rounded-full inline-block" />
+                <h2 className="text-base sm:text-lg font-black text-white tracking-tight">
+                  Top 10 in TVPulsar Today
+                </h2>
+              </div>
+            </div>
+            <div className="flex gap-4 overflow-x-auto scrollbar-none px-4 md:px-8 pb-3 scroll-smooth">
+              {(trendingList.length > 0 ? trendingList.slice(0, 10) : topRatedList.slice(0, 10)).map((item, idx) => (
+                <div
+                  key={`top10-${item.type}-${item.tmdb_id}`}
+                  onClick={() => handleSelectMedia(item)}
+                  className="flex items-end shrink-0 cursor-pointer group active:scale-95 transition-transform"
+                >
+                  {/* Giant 3D Outline Number */}
+                  <span
+                    className="font-black text-7xl sm:text-8xl leading-none text-black select-none pointer-events-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] transform translate-x-3.5 z-0"
+                    style={{
+                      WebkitTextStroke: '4px #595959',
+                    }}
+                  >
+                    {idx + 1}
+                  </span>
+                  {/* Poster Card */}
+                  <div className="relative z-10 w-[115px] sm:w-[140px] aspect-[2/3] rounded-xl overflow-hidden shadow-2xl border border-white/10 group-hover:border-[#E50914] transition-all bg-[#1b1c2b]">
+                    <img
+                      src={item.poster_url}
+                      alt={item.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-1.5 left-1.5 px-1 py-0.2 rounded text-[8px] font-black bg-[#E50914] text-white shadow">
+                      TOP 10
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
           {/* Rail 1: Collections (Fixed high-res verified images with graceful fallback) */}
           <section className="space-y-3">
             <div className="flex items-center justify-between px-4 md:px-8">
@@ -963,24 +1017,6 @@ export const DiscoverPage: React.FC = () => {
             </div>
           )}
         </div>
-      )}
-
-      {/* Dedicated Movie Detail Full-Screen View */}
-      {selectedMovie && (
-        <MovieDetailModal
-          movie={selectedMovie}
-          onClose={() => setSelectedMovie(null)}
-          onPlay={handlePlayFromModal}
-        />
-      )}
-
-      {/* Dedicated Series Detail Full-Screen View */}
-      {selectedSeries && (
-        <SeriesDetailModal
-          series={selectedSeries}
-          onClose={() => setSelectedSeries(null)}
-          onPlay={handlePlayFromModal}
-        />
       )}
     </div>
   );

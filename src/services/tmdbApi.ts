@@ -80,6 +80,48 @@ const GENRE_MAP: Record<number, string> = {
   10768: 'War & Politics',
 };
 
+// Pure family-friendly / NSFW content filter
+const NSFW_BLOCKED_WORDS = [
+  'erotic', 'porn', 'pornographic', 'sex', 'sexual', 'sensual', 'softcore', 'hardcore',
+  'hentai', 'nude', 'nudity', 'explicit', 'fetish', 'orgasm', 'incest', 'xxx', 'milf',
+  'playboy', 'penthouse', 'lust', 'erotica', 'escort', 'camgirl', 'stripper', 'brothel',
+  'hooker', 'whore', 'slut', 'gangbang', 'threesome', 'bdsm', 'dominatrix', 'intercourse',
+  'orgies', 'orgy', 'nymphomaniac', 'swinger', 'pleasure', 'passion', 'carnal',
+];
+
+const NSFW_EXPLICIT_TITLES = [
+  '365 days', 'fifty shades', '50 shades', 'nymphomaniac', 'deep water', 'wild things',
+  'basic instinct', 'caligula', 'the voyeurs', 'sex/life', 'dark desire', 'after we collided',
+  'after we fell', 'after ever happy', 'after everything', 'babygirl', "miller's girl",
+  'eyes wide shut', 'blue is the warmest color', 'shortbus', 'antichrist', 'love 2015',
+  'tie me up tie me down', 'wild orchid', '9 1/2 weeks', 'fatal attraction', 'body heat',
+  'after',
+];
+
+const NSFW_REGEX = new RegExp(`\\b(${NSFW_BLOCKED_WORDS.join('|')})\\b`, 'i');
+
+export function isFamilySafe(item: any): boolean {
+  if (!item) return false;
+  if (item.adult === true) return false;
+
+  const title = (item.title || item.name || item.original_title || '').toLowerCase();
+  const overview = (item.overview || '').toLowerCase();
+
+  for (const blocked of NSFW_EXPLICIT_TITLES) {
+    if (title === blocked || title.startsWith(blocked + ' ') || title.includes(` ${blocked} `) || title.includes(` ${blocked}:`)) {
+      return false;
+    }
+  }
+
+  if (NSFW_REGEX.test(title)) return false;
+
+  if (/\b(erotic|porn|softcore|hentai|orgasm|incest|xxx|milf|gangbang|threesome|bdsm|sexual intercourse)\b/i.test(overview)) {
+    return false;
+  }
+
+  return true;
+}
+
 const TMDB_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 const tmdbCache = new Map<string, { timestamp: number; data: any }>();
 
@@ -222,8 +264,11 @@ export const tmdbService = {
       }
     }
 
-    // Map to VidApiMovie format with real English title
-    const items: VidApiMovie[] = allRawItems.slice(0, 100).map((m) => {
+    // Map to VidApiMovie format with real English title (strictly filtered for family safety)
+    const items: VidApiMovie[] = allRawItems
+      .filter(isFamilySafe)
+      .slice(0, 100)
+      .map((m) => {
       const genreName =
         m.genre_ids && m.genre_ids.length > 0 && GENRE_MAP[m.genre_ids[0]]
           ? GENRE_MAP[m.genre_ids[0]]
@@ -312,8 +357,11 @@ export const tmdbService = {
       }
     }
 
-    // Map to VidApiTvShow format with real English title
-    const items: VidApiTvShow[] = allRawItems.slice(0, 100).map((tv) => {
+    // Map to VidApiTvShow format with real English title (strictly filtered for family safety)
+    const items: VidApiTvShow[] = allRawItems
+      .filter(isFamilySafe)
+      .slice(0, 100)
+      .map((tv) => {
       const genreName =
         tv.genre_ids && tv.genre_ids.length > 0 && GENRE_MAP[tv.genre_ids[0]]
           ? GENRE_MAP[tv.genre_ids[0]]
@@ -370,7 +418,10 @@ export const tmdbService = {
         }),
       ]);
 
-      const movies: VidApiMovie[] = (movieRes.results || []).slice(0, 15).map((m) => ({
+      const movies: VidApiMovie[] = (movieRes.results || [])
+        .filter(isFamilySafe)
+        .slice(0, 15)
+        .map((m) => ({
         tmdb_id: m.id.toString(),
         title: m.title || m.original_title || '',
         year: m.release_date ? m.release_date.split('-')[0] : '',
@@ -386,7 +437,10 @@ export const tmdbService = {
         embed_url: this.buildMovieEmbedUrl(m.id.toString()),
       }));
 
-      const tvs: VidApiTvShow[] = (tvRes.results || []).slice(0, 15).map((tv) => ({
+      const tvs: VidApiTvShow[] = (tvRes.results || [])
+        .filter(isFamilySafe)
+        .slice(0, 15)
+        .map((tv) => ({
         tmdb_id: tv.id.toString(),
         title: tv.name || tv.original_name || '',
         year: tv.first_air_date ? tv.first_air_date.split('-')[0] : '',
@@ -531,7 +585,10 @@ export const tmdbService = {
   async getTrendingMovies(): Promise<VidApiMovie[]> {
     try {
       const data = await tmdbFetch<{ results: any[] }>('/trending/movie/week');
-      return (data.results || []).slice(0, 20).map((m) => ({
+      return (data.results || [])
+        .filter(isFamilySafe)
+        .slice(0, 20)
+        .map((m) => ({
         tmdb_id: m.id.toString(),
         title: m.title || m.original_title || '',
         year: m.release_date ? m.release_date.split('-')[0] : '2026',
@@ -554,7 +611,10 @@ export const tmdbService = {
   async getTrendingTvShows(): Promise<VidApiTvShow[]> {
     try {
       const data = await tmdbFetch<{ results: any[] }>('/trending/tv/week');
-      return (data.results || []).slice(0, 20).map((tv) => ({
+      return (data.results || [])
+        .filter(isFamilySafe)
+        .slice(0, 20)
+        .map((tv) => ({
         tmdb_id: tv.id.toString(),
         title: tv.name || tv.original_name || '',
         year: tv.first_air_date ? tv.first_air_date.split('-')[0] : '2026',
@@ -569,6 +629,64 @@ export const tmdbService = {
         type: 'tv',
         embed_url: this.buildTvEmbedUrl(tv.id.toString(), 1, 1),
       }));
+    } catch {
+      return [];
+    }
+  },
+
+  /**
+   * Latest Cinema Releases (Now Playing in Theaters)
+   */
+  async getLatestMovies(): Promise<VidApiMovie[]> {
+    try {
+      const data = await tmdbFetch<{ results: any[] }>('/movie/now_playing', { page: '1' });
+      return (data.results || [])
+        .filter(isFamilySafe)
+        .slice(0, 20)
+        .map((m) => ({
+          tmdb_id: m.id.toString(),
+          title: m.title || m.original_title || '',
+          year: m.release_date ? m.release_date.split('-')[0] : '2026',
+          poster_url: m.poster_path
+            ? `${IMAGE_BASE_W500}${m.poster_path}`
+            : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=500&q=80',
+          backdrop_url: m.backdrop_path ? `${IMAGE_BASE_ORIGINAL}${m.backdrop_path}` : undefined,
+          overview: m.overview || undefined,
+          rating: m.vote_average ? m.vote_average.toFixed(1) : '7.0',
+          genre: m.genre_ids?.[0] && GENRE_MAP[m.genre_ids[0]] ? GENRE_MAP[m.genre_ids[0]] : 'Cinema',
+          popularity: m.popularity?.toString() || '100',
+          type: 'movie',
+          embed_url: this.buildMovieEmbedUrl(m.id.toString()),
+        }));
+    } catch {
+      return [];
+    }
+  },
+
+  /**
+   * Latest TV Series On The Air (Currently Airing)
+   */
+  async getLatestTvShows(): Promise<VidApiTvShow[]> {
+    try {
+      const data = await tmdbFetch<{ results: any[] }>('/tv/on_the_air', { page: '1' });
+      return (data.results || [])
+        .filter(isFamilySafe)
+        .slice(0, 20)
+        .map((tv) => ({
+          tmdb_id: tv.id.toString(),
+          title: tv.name || tv.original_name || '',
+          year: tv.first_air_date ? tv.first_air_date.split('-')[0] : '2026',
+          poster_url: tv.poster_path
+            ? `${IMAGE_BASE_W500}${tv.poster_path}`
+            : 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=500&q=80',
+          backdrop_url: tv.backdrop_path ? `${IMAGE_BASE_ORIGINAL}${tv.backdrop_path}` : undefined,
+          overview: tv.overview || undefined,
+          rating: tv.vote_average ? tv.vote_average.toFixed(1) : '7.5',
+          genre: tv.genre_ids?.[0] && GENRE_MAP[tv.genre_ids[0]] ? GENRE_MAP[tv.genre_ids[0]] : 'TV Series',
+          popularity: tv.popularity?.toString() || '100',
+          type: 'tv',
+          embed_url: this.buildTvEmbedUrl(tv.id.toString(), 1, 1),
+        }));
     } catch {
       return [];
     }
