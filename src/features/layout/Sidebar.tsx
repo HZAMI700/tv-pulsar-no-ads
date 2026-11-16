@@ -64,7 +64,7 @@ export const Sidebar: React.FC = () => {
     <aside
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}
-      className={`hidden md:flex flex-col justify-between fixed top-0 bottom-0 right-0 z-40 bg-[#000000]/95 backdrop-blur-2xl border-l border-[#232323] transition-all duration-300 ease-out select-none ${
+      className={`hidden md:flex flex-col justify-between fixed top-0 bottom-0 left-0 z-40 bg-[#000000]/95 backdrop-blur-2xl border-r border-[#232323] transition-all duration-300 ease-out select-none ${
         isExpanded ? 'w-64 shadow-[0_0_40px_rgba(0,0,0,0.9)]' : 'w-20'
       }`}
     >
@@ -93,7 +93,7 @@ export const Sidebar: React.FC = () => {
               onClick={() => setCurrentTab(item.tab)}
               className={`group relative flex items-center w-full gap-4 px-3.5 py-3 rounded-xl font-medium transition-all duration-200 cursor-pointer ${
                 isActive
-                  ? 'bg-[#e50914]/20 text-[#e50914] border-r-2 border-[#e50914]'
+                  ? 'bg-[#e50914]/20 text-[#e50914] border-l-2 border-[#e50914]'
                   : 'text-white/70 hover:text-white hover:bg-[#232323]'
               }`}
             >

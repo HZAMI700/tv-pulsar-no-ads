@@ -585,12 +585,12 @@ export const HomePage: React.FC = () => {
 
   return (
     <main className="min-h-screen bg-[#0B0B0B] text-white pb-32 pt-1 select-none" dir={isRTL ? 'rtl' : 'ltr'}>
-      <div className="max-w-xl md:max-w-7xl mx-auto">
-        {/* 1. Integrated Search & Profile Bar */}
-        <div className="px-4 pt-1 pb-3 flex items-center gap-2.5 z-20 relative">
+      <div className="w-full max-w-[1920px] mx-auto px-2 md:px-8">
+        {/* 1. Integrated Search & Category Quick Filters */}
+        <div className="px-2 md:px-4 pt-1 pb-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 z-20 relative">
           <div
             onClick={() => setIsSearchOpen(true)}
-            className="flex-1 bg-[#1C1C1E]/90 backdrop-blur-md border border-white/10 rounded-xl px-3.5 py-2 flex items-center gap-2.5 cursor-pointer hover:border-white/20 transition-all active:scale-[0.99] shadow-lg"
+            className="flex-1 max-w-xl bg-[#1C1C1E]/90 backdrop-blur-md border border-white/10 rounded-xl px-4 py-2.5 flex items-center gap-2.5 cursor-pointer hover:border-white/20 transition-all active:scale-[0.99] shadow-lg"
           >
             <Search className="w-4 h-4 text-neutral-400" />
             <span className="text-xs text-neutral-400 font-medium">
@@ -598,20 +598,41 @@ export const HomePage: React.FC = () => {
             </span>
           </div>
 
+          {/* Quick Filter Category Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+            {[
+              { label: isRTL ? '🔥 الكل' : '🔥 All', action: () => setCurrentTab('home') },
+              { label: isRTL ? '⚽ المباريات' : '⚽ Matches', action: () => setCurrentTab('sports') },
+              { label: isRTL ? '📺 القنوات' : '📺 Channels', action: () => setCurrentTab('channels') },
+              { label: isRTL ? '🎬 الأفلام' : '🎬 Movies', action: () => setCurrentTab('movies') },
+              { label: isRTL ? '📊 النتائج والتحليلات' : '📊 Scores & Analytics', action: () => setCurrentTab('scores') },
+              { label: isRTL ? '⭐ توب 10' : '⭐ Top 10', action: () => setCurrentTab('movies') },
+            ].map((chip, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={chip.action}
+                className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#1C1C1E] border border-white/10 text-neutral-300 hover:text-white hover:border-[#E50914] hover:bg-[#E50914]/15 transition-all whitespace-nowrap active:scale-95 cursor-pointer"
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+
           <button
             type="button"
             onClick={() => setCurrentTab('settings')}
-            className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-[#E50914] to-red-950 flex items-center justify-center font-black text-xs border border-white/15 cursor-pointer text-white shadow-lg active:scale-95 shrink-0"
+            className="hidden md:flex relative w-10 h-10 rounded-xl bg-gradient-to-br from-[#E50914] to-red-950 items-center justify-center font-black text-xs border border-white/15 cursor-pointer text-white shadow-lg active:scale-95 shrink-0"
             title="Profile / Settings"
           >
             YA
-            <span className="w-2 h-2 rounded-full bg-[#E50914] ring-2 ring-[#0B0B0B] absolute -top-0.5 -right-0.5" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#E50914] ring-2 ring-[#0B0B0B] absolute -top-0.5 -right-0.5" />
           </button>
         </div>
 
-        {/* 2. Full-Bleed Netflix Mobile Hero Portrait Slider */}
+        {/* 2. Full-Bleed Netflix Hero Portrait Slider */}
         <div
-          className="relative w-full h-[65vh] min-h-[480px] max-h-[600px] sm:h-[72vh] overflow-hidden select-none mb-6 touch-pan-y"
+          className="relative w-full h-[65vh] min-h-[480px] max-h-[620px] sm:h-[72vh] rounded-2xl border border-white/10 shadow-2xl overflow-hidden select-none mb-8 touch-pan-y"
           onTouchStart={handleHeroTouchStart}
           onTouchEnd={handleHeroTouchEnd}
         >
@@ -631,9 +652,10 @@ export const HomePage: React.FC = () => {
             </div>
           ))}
 
-          {/* Cinematic Overlays: Top Vignette + Bottom Rich Gradient into Obsidian Canvas */}
+          {/* Cinematic Overlays: Top Vignette + Bottom Rich Gradient + Subtle Side Vignette */}
           <div className="absolute inset-0 z-10 bg-gradient-to-b from-[#0B0B0B]/80 via-transparent to-transparent pointer-events-none" />
           <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#0B0B0B] via-[#0B0B0B]/85 via-45% to-transparent pointer-events-none" />
+          <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#0B0B0B]/70 via-transparent to-[#0B0B0B]/70 pointer-events-none hidden md:block" />
 
           {/* Top Center PULSAR Brand Mark */}
           <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 pointer-events-none">
@@ -724,105 +746,62 @@ export const HomePage: React.FC = () => {
         </div>
 
         {/* 3. Live Sports & Channels Stories Circles */}
-        <div className="px-4 mb-6">
+        <div className="px-4 mb-8">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold tracking-tight text-white">
+            <h3 className="text-sm md:text-base font-bold tracking-tight text-white flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#E50914] animate-pulse" />
               {isRTL ? 'القنوات الرياضية المباشرة' : 'Live Sports & Channels'}
             </h3>
             <button
               type="button"
               onClick={() => setCurrentTab('channels')}
-              className="text-neutral-400 hover:text-white text-xs flex items-center gap-0.5 cursor-pointer"
+              className="text-neutral-400 hover:text-white text-xs font-semibold flex items-center gap-0.5 cursor-pointer hover:underline"
             >
-              <span>{isRTL ? 'الكل' : 'All'}</span>
+              <span>{isRTL ? 'جميع القنوات' : 'All Channels'}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4 scroll-smooth">
-            {/* beIN Sports */}
-            <div
-              onClick={() => handlePlayChannelCircle('bein', 'https://wideiptv.top/player/beINAR')}
-              className="cursor-pointer group flex flex-col items-center select-none shrink-0"
-            >
-              <div className="relative w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-[#E50914] to-purple-600 mb-1.5 group-hover:scale-105 transition-transform duration-200">
-                <div className="w-full h-full rounded-full bg-[#3B1764] flex flex-col items-center justify-center px-1">
-                  <span className="font-black text-xs tracking-tight text-white leading-none">beIN</span>
-                  <span className="text-[7px] font-bold tracking-widest text-purple-200">SPORTS</span>
-                </div>
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-[#E50914] text-[8px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider shadow whitespace-nowrap">
-                  • LIVE
-                </span>
-              </div>
-              <span className="text-[10px] text-neutral-300 font-medium truncate w-16 text-center">beIN Sports</span>
-            </div>
-
-            {/* Sky Sports */}
-            <div
-              onClick={() => handlePlayChannelCircle('sky', 'https://wideiptv.top/player/beINAR')}
-              className="cursor-pointer group flex flex-col items-center select-none shrink-0"
-            >
-              <div className="relative w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-[#E50914] to-blue-600 mb-1.5 group-hover:scale-105 transition-transform duration-200">
-                <div className="w-full h-full rounded-full bg-gradient-to-b from-[#003399] to-[#C8102E] flex flex-col items-center justify-center px-1">
-                  <span className="font-extrabold text-xs text-white leading-none">sky</span>
-                  <span className="text-[8px] font-bold text-white/95 leading-tight">sports</span>
-                </div>
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-[#E50914] text-[8px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider shadow whitespace-nowrap">
-                  • LIVE
-                </span>
-              </div>
-              <span className="text-[10px] text-neutral-300 font-medium truncate w-16 text-center">Sky Sports</span>
-            </div>
-
-            {/* CANAL+ */}
-            <div
-              onClick={() => handlePlayChannelCircle('canal', 'https://wideiptv.top/player/beINAR')}
-              className="cursor-pointer group flex flex-col items-center select-none shrink-0"
-            >
-              <div className="relative w-16 h-16 rounded-full p-[2px] bg-[#E50914] mb-1.5 group-hover:scale-105 transition-transform duration-200">
-                <div className="w-full h-full rounded-full bg-black flex items-center justify-center px-1">
-                  <span className="font-black text-[9px] tracking-wider text-white">CANAL+</span>
-                </div>
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-[#E50914] text-[8px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider shadow whitespace-nowrap">
-                  • LIVE
-                </span>
-              </div>
-              <span className="text-[10px] text-neutral-300 font-medium truncate w-16 text-center">CANAL+</span>
-            </div>
-
-            {/* DAZN */}
-            <div
-              onClick={() => handlePlayChannelCircle('dazn', 'https://wideiptv.top/player/beINAR')}
-              className="cursor-pointer group flex flex-col items-center select-none shrink-0"
-            >
-              <div className="relative w-16 h-16 rounded-full p-[2px] bg-[#E50914] mb-1.5 group-hover:scale-105 transition-transform duration-200">
-                <div className="w-full h-full rounded-full bg-[#0F0F10] flex items-center justify-center">
-                  <div className="border-2 border-white px-1.5 py-0.5 text-[8px] font-black leading-none tracking-tighter text-white">
-                    DA<br />ZN
+          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 scroll-smooth">
+            {(channels && channels.length > 0
+              ? channels.slice(0, 20)
+              : [
+                  { id: 'c-bein', name: 'beIN Sports 1', resolvedLogo: '/logos/bein-sports-1.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein2', name: 'beIN Sports 2', resolvedLogo: '/logos/bein-sports-2.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein3', name: 'beIN Sports 3', resolvedLogo: '/logos/bein-sports-3.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-sky', name: 'Sky Sports', resolvedLogo: '/logos/sky-sports-main-event-uk.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-canal', name: 'CANAL+ Sport', resolvedLogo: '/logos/canal-plus-sport-5-afrique-fr.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-dazn', name: 'DAZN 1', resolvedLogo: '/logos/dazn-1-es.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-espn', name: 'ESPN', resolvedLogo: '/logos/espnu-us.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-alkass', name: 'Alkass', resolvedLogo: '/logos/alkass.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-eurosport', name: 'Eurosport 1', resolvedLogo: '/logos/eurosport-1-de.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-watania', name: 'Watania 1', resolvedLogo: '/logos/watania-1.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                ]
+            ).map((ch) => (
+              <div
+                key={ch.id}
+                onClick={() => handlePlayChannel(ch as ChannelItem)}
+                className="cursor-pointer group flex flex-col items-center select-none shrink-0"
+              >
+                <div className="relative w-16 h-16 md:w-18 md:h-18 rounded-full p-[2px] bg-gradient-to-tr from-[#E50914] via-red-600 to-purple-600 mb-2 group-hover:scale-105 group-hover:shadow-[0_0_15px_rgba(229,9,20,0.5)] transition-all duration-200">
+                  <div className="w-full h-full rounded-full bg-[#1C1C1E] border border-white/10 flex items-center justify-center overflow-hidden p-2">
+                    {ch.resolvedLogo ? (
+                      <img src={ch.resolvedLogo} alt={ch.name} className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="font-bold text-[10px] text-white text-center leading-tight truncate px-1">
+                        {ch.name}
+                      </span>
+                    )}
                   </div>
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-[#E50914] text-[8px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider shadow whitespace-nowrap">
+                    • LIVE
+                  </span>
                 </div>
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-[#E50914] text-[8px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider shadow whitespace-nowrap">
-                  • LIVE
+                <span className="text-[10px] md:text-xs text-neutral-300 group-hover:text-white font-medium truncate w-18 md:w-20 text-center transition-colors">
+                  {ch.name}
                 </span>
               </div>
-              <span className="text-[10px] text-neutral-300 font-medium truncate w-16 text-center">DAZN</span>
-            </div>
-
-            {/* ESPN */}
-            <div
-              onClick={() => handlePlayChannelCircle('espn', 'https://wideiptv.top/player/beINAR')}
-              className="cursor-pointer group flex flex-col items-center select-none shrink-0"
-            >
-              <div className="relative w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-[#E50914] to-red-600 mb-1.5 group-hover:scale-105 transition-transform duration-200">
-                <div className="w-full h-full rounded-full bg-gradient-to-br from-[#D00000] to-[#7A0000] flex items-center justify-center">
-                  <span className="font-black italic text-xs text-white">ESPN</span>
-                </div>
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-[#E50914] text-[8px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider shadow whitespace-nowrap">
-                  • LIVE
-                </span>
-              </div>
-              <span className="text-[10px] text-neutral-300 font-medium truncate w-16 text-center">ESPN</span>
-            </div>
+            ))}
           </div>
         </div>
 
