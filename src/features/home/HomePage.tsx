@@ -888,19 +888,25 @@ export const HomePage: React.FC = () => {
 
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 scroll-smooth">
             {(channels && channels.length > 0
-              ? channels.slice(0, 24)
+              ? channels.slice(0, 36)
               : [
-                  { id: 'c-bein', name: 'beIN SPORTS ...', resolvedLogo: '/logos/bein-sports-1.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
                   { id: 'c-bein1', name: 'beIN SPORTS 1', resolvedLogo: '/logos/bein-sports-1.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
                   { id: 'c-bein2', name: 'beIN SPORTS 2', resolvedLogo: '/logos/bein-sports-2.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
                   { id: 'c-bein3', name: 'beIN SPORTS 3', resolvedLogo: '/logos/bein-sports-3.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
                   { id: 'c-bein4', name: 'beIN SPORTS 4', resolvedLogo: '/logos/bein-sports-4.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-bein6', name: 'beIN SPORTS 6', resolvedLogo: '/logos/bein-sports-6.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-bein7', name: 'beIN SPORTS 7', resolvedLogo: '/logos/bein-sports-7.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-bein8', name: 'beIN SPORTS 8', resolvedLogo: '/logos/bein-sports-8.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-euro7', name: 'beIN SPORTS 7', resolvedLogo: '/logos/eurosport-1-de.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-euro9', name: 'beIN SPORTS 9', resolvedLogo: '/logos/eurosport-2-de.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
-                  { id: 'c-jazeera', name: 'Al Jazeera', resolvedLogo: '/logos/france-24-fr.png', src: 'https://wideiptv.top/player/beINAR', category: 'News' },
+                  { id: 'c-bein5', name: 'beIN SPORTS 5', resolvedLogo: '/logos/bein-sports-1.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein6', name: 'beIN SPORTS 6', resolvedLogo: '/logos/bein-sports-2.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein7', name: 'beIN SPORTS 7', resolvedLogo: '/logos/bein-sports-1.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein8', name: 'beIN SPORTS 8', resolvedLogo: '/logos/bein-sports-2.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-bein9', name: 'beIN SPORTS 9', resolvedLogo: '/logos/bein-sports-1.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-sky-main', name: 'Sky Sports Main Event', resolvedLogo: '/logos/sky-sports-main-event-uk.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-sky-pl', name: 'Sky Sports Premier League', resolvedLogo: '/logos/sky-sports-main-event-uk.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-sky-football', name: 'Sky Sports Football', resolvedLogo: '/logos/sky-sports-main-event-uk.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-sky-f1', name: 'Sky Sports F1', resolvedLogo: '/logos/sky-sports-main-event-uk.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-sky-action', name: 'Sky Sports Action', resolvedLogo: '/logos/sky-sports-main-event-uk.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-sky-arena', name: 'Sky Sports Arena', resolvedLogo: '/logos/sky-sports-main-event-uk.png', src: 'https://wideiptv.top/player/beINAR', category: 'Sports' },
+                  { id: 'c-watania1', name: 'El Watania 1', resolvedLogo: '/logos/watania-1.png', src: 'https://wideiptv.top/player/beINAR', category: 'Tunisia' },
+                  { id: 'c-watania2', name: 'El Watania 2', resolvedLogo: '/logos/watania-2.png', src: 'https://wideiptv.top/player/beINAR', category: 'Tunisia' },
                   { id: 'c-mosaique', name: 'Mosaique FM', resolvedLogo: '/logos/mosaique-fm.png', src: 'https://wideiptv.top/player/beINAR', category: 'Radio' },
                 ]
             ).map((ch) => (

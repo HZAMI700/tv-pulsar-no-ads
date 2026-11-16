@@ -34,6 +34,10 @@ export const channelsService = {
       return catalog[cleanKey];
     }
 
+    if (cleanKey.includes('skysport') || cleanKey.includes('skysports')) {
+      return '/logos/sky-sports-main-event-uk.png';
+    }
+
     return undefined;
   },
 

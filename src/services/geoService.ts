@@ -21,10 +21,10 @@ const COUNTRY_CATALOGS: Record<string, { info: UserCountryInfo; items: Localized
       nameEn: 'Tunisia',
       nameAr: 'تونس',
       flag: '🇹🇳',
-      railTitleEn: '🇹🇳 Popular in Tunisia',
-      railTitleAr: '🇹🇳 أشهر الأعمال والمسلسلات في تونس',
-      railSubtitleEn: 'Top-rated Tunisian cinema & binge-worthy seasons',
-      railSubtitleAr: 'أقوى المسلسلات والأفلام التونسية الأكثر مشاهدة',
+      railTitleEn: 'Popular in Tunisia',
+      railTitleAr: 'أشهر الأعمال والمسلسلات في تونس',
+      railSubtitleEn: 'Top-rated Tunisian cinema & binge-worthy series (Harga, Choufli Hal, Dachra...)',
+      railSubtitleAr: 'أقوى المسلسلات والأفلام التونسية الأكثر مشاهدة (حرقة، شوفلي حل، دشرة...)',
     },
     items: [
       {
@@ -450,34 +450,64 @@ class GeoLocationService {
     return detectedCode;
   }
 
-  private async refineWithGeoIp() {
-    if (this.isDetecting || typeof window === 'undefined') return;
+  private async refineWithGeoIp(): Promise<string | null> {
+    if (this.isDetecting || typeof window === 'undefined') return this.cachedCountryCode;
     this.isDetecting = true;
 
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 4000);
-
-      // Free, lightweight HTTPS IP lookup
-      const res = await fetch('https://ipwho.is/', {
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-
-      if (res.ok) {
-        const data = await res.json();
-        const code = (data.country_code || '').toUpperCase();
-        if (code && (code === 'TN' || code === 'EG' || code === 'DZ' || code === 'MA' || code === 'SA')) {
-          this.cachedCountryCode = code;
-          localStorage.setItem('pulsar_user_country', code);
-          localStorage.setItem('pulsar_user_country_time', Date.now().toString());
+      // 1. Try api.country.is (ultra-fast, zero CORS, high reliability)
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 2500);
+        const res = await fetch('https://api.country.is/', { signal: controller.signal });
+        clearTimeout(timeout);
+        if (res.ok) {
+          const data = await res.json();
+          const code = (data.country || '').toUpperCase();
+          if (code) {
+            this.setCountry(code);
+            return code;
+          }
         }
-      }
+      } catch (_) {}
+
+      // 2. Try ipwho.is
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 2500);
+        const res = await fetch('https://ipwho.is/', { signal: controller.signal });
+        clearTimeout(timeout);
+        if (res.ok) {
+          const data = await res.json();
+          const code = (data.country_code || '').toUpperCase();
+          if (code) {
+            this.setCountry(code);
+            return code;
+          }
+        }
+      } catch (_) {}
+
+      // 3. Try ipapi.co
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 2500);
+        const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+        clearTimeout(timeout);
+        if (res.ok) {
+          const data = await res.json();
+          const code = (data.country_code || '').toUpperCase();
+          if (code) {
+            this.setCountry(code);
+            return code;
+          }
+        }
+      } catch (_) {}
     } catch (_) {
       // Quietly retain timezone/default
     } finally {
       this.isDetecting = false;
     }
+    return this.cachedCountryCode;
   }
 
   public setCountry(code: string): { info: UserCountryInfo; items: LocalizedMediaItem[] } {
