@@ -498,24 +498,31 @@ class DownloadService {
           const data = await res.json();
           if (data && data.success) {
             const rawFileName = data.fileName || defaultFileName;
-            let targetUrl = data.proxyUrl || data.url;
+            const directStreamUrl = data.url;
 
-            // If browser is on HTTPS and target is HTTP, route through HTTPS proxy to prevent blocked downloads
-            if (isHttps && targetUrl && targetUrl.startsWith('http://node19.botkeep.cloud')) {
-              targetUrl = `https://pulsar-moviebox-api.onrender.com/api/moviebox/proxy?url=${encodeURIComponent(data.url)}`;
-            }
+            // When hosted on a web server with PHP (like cPanel / streamnaro.online), route through local proxy.php to avoid CDN 429 rate-limiting
+            const isWebProduction = typeof window !== 'undefined' && 
+              (window.location.hostname.includes('streamnaro.online') || window.location.hostname.includes('streamanro.online') || window.location.port === '');
 
-            if (targetUrl) {
+            let downloadUrl = '';
+            if (isWebProduction && directStreamUrl) {
+              downloadUrl = `${window.location.origin}/api/proxy.php?url=${encodeURIComponent(directStreamUrl)}&filename=${encodeURIComponent(rawFileName)}`;
+            } else {
+              let targetUrl = data.proxyUrl || data.url;
+              if (isHttps && targetUrl && targetUrl.startsWith('http://node19.botkeep.cloud')) {
+                targetUrl = `https://pulsar-moviebox-api.onrender.com/api/moviebox/proxy?url=${encodeURIComponent(directStreamUrl)}`;
+              }
               const sep = targetUrl.includes('?') ? '&' : '?';
-              const downloadUrl = `${targetUrl}${sep}download=1&filename=${encodeURIComponent(rawFileName)}`;
-              return {
-                success: true,
-                downloadUrl,
-                fileName: rawFileName,
-                sizeBytes: data.sizeBytes,
-                quality: data.quality || quality,
-              };
+              downloadUrl = `${targetUrl}${sep}download=1&filename=${encodeURIComponent(rawFileName)}`;
             }
+
+            return {
+              success: true,
+              downloadUrl,
+              fileName: rawFileName,
+              sizeBytes: data.sizeBytes,
+              quality: data.quality || quality,
+            };
           }
         }
       } catch (err) {
