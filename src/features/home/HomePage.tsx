@@ -1,9 +1,26 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import { Search, Play, Plus, ChevronRight, Check, Loader2, Info } from 'lucide-react';
+import {
+  Search,
+  Play,
+  Plus,
+  ChevronRight,
+  ChevronLeft,
+  Check,
+  Loader2,
+  Info,
+  Star,
+  Sparkles,
+  Globe,
+  MapPin,
+  Film,
+  Tv,
+  Flame,
+} from 'lucide-react';
 import { ChannelItem, VidApiMovie, VidApiTvShow, MatchItem, ActiveMedia } from '../../types';
 import { streamFreeService } from '../../services/streamFreeApi';
 import { channelsService } from '../../services/channelsApi';
 import { tmdbService } from '../../services/tmdbApi';
+import { geoService, LocalizedMediaItem, UserCountryInfo } from '../../services/geoService';
 import { useAppStore } from '../../store/useAppStore';
 import { ContentRail } from './ContentRail';
 import { MediaCard } from '../discover/MediaCard';
@@ -44,6 +61,27 @@ const INFINITE_GENRE_DEFINITIONS = [
   { id: 'romance', title: 'Romance & Heartfelt', titleAr: 'رومانسية ومشاعر', subtitle: 'Love stories & dramas', subtitleAr: 'قصص حب رومانسية مؤثرة', type: 'movie' as const, genreId: '10749' },
 ];
 
+const GENRE_TILES = [
+  { id: '28', nameEn: 'Action', nameAr: 'حركة وأكشن', icon: '💥', gradient: 'from-red-600 via-rose-700 to-amber-900' },
+  { id: '35', nameEn: 'Comedy', nameAr: 'كوميديا', icon: '😂', gradient: 'from-amber-500 via-orange-600 to-red-800' },
+  { id: '18', nameEn: 'Drama', nameAr: 'دراما', icon: '🎭', gradient: 'from-blue-600 via-indigo-700 to-purple-900' },
+  { id: '878', nameEn: 'Sci-Fi', nameAr: 'خيال علمي', icon: '🚀', gradient: 'from-cyan-600 via-blue-700 to-indigo-900' },
+  { id: '27', nameEn: 'Horror', nameAr: 'رعب وتشويق', icon: '👻', gradient: 'from-emerald-700 via-teal-800 to-slate-950' },
+  { id: '16', nameEn: 'Animation', nameAr: 'رسوم وأنيمي', icon: '✨', gradient: 'from-pink-500 via-rose-600 to-purple-900' },
+  { id: '80', nameEn: 'Crime & Noir', nameAr: 'جريمة وغموض', icon: '🕵️', gradient: 'from-stone-700 via-zinc-800 to-neutral-950' },
+  { id: '12', nameEn: 'Adventure', nameAr: 'مغامرات', icon: '🗺️', gradient: 'from-teal-600 via-emerald-700 to-cyan-900' },
+];
+
+const LANGUAGE_TILES = [
+  { code: 'ar', nameEn: 'Arabic Cinema', nameAr: 'السينما العربية', flag: '🇹🇳 🇪🇬 🇩🇿', badge: 'MENA' },
+  { code: 'en', nameEn: 'Hollywood / Global', nameAr: 'هوليوود والعالمية', flag: '🇺🇸 🇬🇧', badge: 'EN' },
+  { code: 'fr', nameEn: 'French Cinema', nameAr: 'السينما الفرنسية', flag: '🇫🇷', badge: 'FR' },
+  { code: 'es', nameEn: 'Spanish Cinema', nameAr: 'السينما الإسبانية', flag: '🇪🇸', badge: 'ES' },
+  { code: 'ko', nameEn: 'Korean K-Drama', nameAr: 'الكورية والدراما', flag: '🇰🇷', badge: 'KO' },
+  { code: 'tr', nameEn: 'Turkish Sagas', nameAr: 'المسلسلات التركية', flag: '🇹🇷', badge: 'TR' },
+  { code: 'it', nameEn: 'Italian Cinema', nameAr: 'السينما الإيطالية', flag: '🇮🇹', badge: 'IT' },
+];
+
 function formatGenresBullet(genreStr?: string, defaultGenres = 'Action • Drama • Thriller'): string {
   if (!genreStr) return defaultGenres;
   const parts = genreStr.split(/[,/|•]/).map((g) => g.trim()).filter(Boolean);
@@ -72,6 +110,9 @@ export const HomePage: React.FC = () => {
   const [actionMovies, setActionMovies] = useState<VidApiMovie[]>(() => homeDataCache?.actionMovies || []);
   const [tvShows, setTvShows] = useState<VidApiTvShow[]>(() => homeDataCache?.tvShows || []);
   const [dynamicRails, setDynamicRails] = useState<DynamicRail[]>(() => homeDataCache?.dynamicRails || []);
+  const [localizedData, setLocalizedData] = useState(() => geoService.getLocalizedRailData());
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const availableCountries = useMemo(() => geoService.getAvailableCountries(), []);
   const [isLoading, setIsLoading] = useState(() => !homeDataCache);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMoreRails, setHasMoreRails] = useState(true);
@@ -80,6 +121,15 @@ export const HomePage: React.FC = () => {
   const currentRailIndexRef = useRef(homeDataCache?.dynamicRails?.length || 0);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto-detect country via Geo-IP asynchronously
+  useEffect(() => {
+    geoService.detectCountryAsync().then((res) => {
+      if (res && res.items && res.items.length > 0) {
+        setLocalizedData(res);
+      }
+    });
+  }, []);
 
   // Initial Data Load
   useEffect(() => {
@@ -630,12 +680,32 @@ export const HomePage: React.FC = () => {
           </button>
         </div>
 
-        {/* 2. Full-Bleed Netflix Hero Portrait Slider */}
+        {/* 2. Full-Bleed Modern Hero Carousel (Matching nxsha.space architecture with TV Pulsar Identity) */}
         <div
-          className="relative w-full h-[65vh] min-h-[480px] max-h-[620px] sm:h-[72vh] rounded-2xl border border-white/10 shadow-2xl overflow-hidden select-none mb-8 touch-pan-y"
+          className="relative w-full h-[65vh] min-h-[500px] max-h-[640px] sm:h-[72vh] rounded-3xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.85)] overflow-hidden select-none mb-10 touch-pan-y group"
           onTouchStart={handleHeroTouchStart}
           onTouchEnd={handleHeroTouchEnd}
         >
+          {/* Floating Prev Button (Left) */}
+          <button
+            type="button"
+            onClick={() => setActiveHeroIdx((prev) => (prev - 1 + featuredItems.length) % featuredItems.length)}
+            className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/45 hover:bg-[#E50914] text-white border border-white/15 backdrop-blur-md items-center justify-center transition-all cursor-pointer shadow-2xl active:scale-95 group-hover:opacity-100 opacity-70"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+
+          {/* Floating Next Button (Right) */}
+          <button
+            type="button"
+            onClick={() => setActiveHeroIdx((prev) => (prev + 1) % featuredItems.length)}
+            className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/45 hover:bg-[#E50914] text-white border border-white/15 backdrop-blur-md items-center justify-center transition-all cursor-pointer shadow-2xl active:scale-95 group-hover:opacity-100 opacity-70"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+
           {/* Background Poster Images with Smooth Fade Transition */}
           {featuredItems.map((item, idx) => (
             <div
@@ -653,81 +723,90 @@ export const HomePage: React.FC = () => {
           ))}
 
           {/* Cinematic Overlays: Top Vignette + Bottom Rich Gradient + Subtle Side Vignette */}
-          <div className="absolute inset-0 z-10 bg-gradient-to-b from-[#0B0B0B]/80 via-transparent to-transparent pointer-events-none" />
-          <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#0B0B0B] via-[#0B0B0B]/85 via-45% to-transparent pointer-events-none" />
+          <div className="absolute inset-0 z-10 bg-gradient-to-b from-[#0B0B0B]/85 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#0B0B0B] via-[#0B0B0B]/85 via-50% to-transparent pointer-events-none" />
           <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#0B0B0B]/70 via-transparent to-[#0B0B0B]/70 pointer-events-none hidden md:block" />
 
           {/* Top Center PULSAR Brand Mark */}
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 pointer-events-none">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 pointer-events-none bg-black/40 backdrop-blur-md px-3.5 py-1 rounded-full border border-white/10">
+            <span className="w-2 h-2 rounded-full bg-[#E50914] animate-ping" />
             <span className="font-black text-xs sm:text-sm tracking-widest text-[#E50914] drop-shadow-md">
-              PULSAR
+              PULSAR EXCLUSIVE
             </span>
           </div>
 
-          {/* Lower Hero Content: Category Badge + Large Bold Title + Genres + 3-Button Action Row */}
-          <div className="absolute bottom-4 left-0 right-0 z-20 flex flex-col items-center text-center px-4">
-            {/* Category Badge e.g. A PULSAR FILM / A PULSAR SERIES */}
-            <div className="flex items-center gap-2 mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] text-white/90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+          {/* Lower Hero Content: Category Badge + Large Bold Title + Metadata + 3-Button Action Row */}
+          <div className="absolute bottom-6 left-0 right-0 z-20 flex flex-col items-center text-center px-4">
+            {/* Category Badge & Star Rating Capsule */}
+            <div className="flex items-center justify-center flex-wrap gap-2 mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-white/95 bg-[#E50914]/25 border border-[#E50914]/40 px-3 py-0.5 rounded-full drop-shadow">
                 {isRTL ? currentHero.badgeAr : currentHero.badge}
+              </span>
+              <span className="flex items-center gap-1 text-[11px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                8.8
+              </span>
+              <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded">
+                4K UHD
               </span>
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] max-w-lg leading-tight px-2">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] max-w-2xl leading-tight px-2">
               {currentHero.title}
             </h1>
 
             {/* Bulleted Descriptors / Genres */}
-            <p className="mt-2 text-[11px] sm:text-xs text-white/80 font-medium tracking-wide flex items-center justify-center flex-wrap gap-1.5 drop-shadow px-4 max-w-md">
+            <p className="mt-2 text-[11px] sm:text-xs text-white/80 font-medium tracking-wide flex items-center justify-center flex-wrap gap-1.5 drop-shadow px-4 max-w-lg">
               {isRTL ? currentHero.genresAr : currentHero.genres}
             </p>
 
-            {/* 3-Action Control Row (Exact match to Netflix mobile screenshot) */}
-            <div className="mt-4 flex items-center justify-center gap-6 sm:gap-8 w-full max-w-sm">
-              {/* 1. Left Action: + My List */}
-              <button
-                type="button"
-                onClick={() => toggleFavorite(currentHero.id)}
-                className="flex flex-col items-center justify-center gap-1 text-white hover:text-white/80 active:scale-90 transition-all cursor-pointer min-w-[64px]"
-                title="My List"
-              >
-                {isHeroInMyList ? (
-                  <Check className="w-5 h-5 text-white" />
-                ) : (
-                  <Plus className="w-5 h-5 text-white" />
-                )}
-                <span className="text-[11px] font-semibold tracking-tight text-white/90">
-                  {isRTL ? 'قائمتي' : 'My List'}
-                </span>
-              </button>
-
-              {/* 2. Center Action: White Rounded Play Button */}
+            {/* 3-Action Control Row */}
+            <div className="mt-5 flex items-center justify-center gap-3 sm:gap-4 w-full max-w-md">
+              {/* 1. Primary Action: Red Play Button */}
               <button
                 type="button"
                 onClick={() => handlePlayHero(currentHero)}
-                className="bg-white hover:bg-neutral-200 text-black font-extrabold text-sm sm:text-base px-7 sm:px-9 py-2 sm:py-2.5 rounded-md flex items-center justify-center gap-2 shadow-[0_4px_24px_rgba(255,255,255,0.25)] active:scale-95 transition-all cursor-pointer"
+                className="bg-[#E50914] hover:bg-red-700 text-white font-extrabold text-sm sm:text-base px-7 sm:px-9 py-2.5 sm:py-3 rounded-full flex items-center justify-center gap-2.5 shadow-[0_4px_25px_rgba(229,9,20,0.55)] active:scale-95 transition-all cursor-pointer"
               >
-                <Play className="w-4 h-4 fill-black text-black" />
-                <span>{isRTL ? 'تشغيل' : 'Play'}</span>
+                <Play className="w-4 h-4 fill-white text-white" />
+                <span>{isRTL ? 'تشغيل الآن' : 'Watch Now'}</span>
               </button>
 
-              {/* 3. Right Action: ⓘ Info */}
+              {/* 2. Secondary Action: + My List */}
+              <button
+                type="button"
+                onClick={() => toggleFavorite(currentHero.id)}
+                className="bg-[#1C1C1E]/80 hover:bg-[#2C2C2E] border border-white/15 text-white font-semibold text-xs sm:text-sm px-4 sm:px-5 py-2.5 sm:py-3 rounded-full flex items-center justify-center gap-1.5 backdrop-blur-md active:scale-95 transition-all cursor-pointer"
+                title="My List"
+              >
+                {isHeroInMyList ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-400" />
+                    <span className="text-emerald-400">{isRTL ? 'في قائمتي' : 'Added'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 text-white" />
+                    <span>{isRTL ? 'قائمتي' : 'My List'}</span>
+                  </>
+                )}
+              </button>
+
+              {/* 3. Third Action: ⓘ Details */}
               <button
                 type="button"
                 onClick={() => handleInfoHero(currentHero)}
-                className="flex flex-col items-center justify-center gap-1 text-white hover:text-white/80 active:scale-90 transition-all cursor-pointer min-w-[64px]"
-                title="Info"
+                className="bg-[#1C1C1E]/80 hover:bg-[#2C2C2E] border border-white/15 text-white font-semibold text-xs sm:text-sm px-4 sm:px-5 py-2.5 sm:py-3 rounded-full flex items-center justify-center gap-1.5 backdrop-blur-md active:scale-95 transition-all cursor-pointer"
+                title="Details"
               >
-                <Info className="w-5 h-5 text-white" />
-                <span className="text-[11px] font-semibold tracking-tight text-white/90">
-                  {isRTL ? 'معلومات' : 'Info'}
-                </span>
+                <Info className="w-4 h-4 text-white" />
+                <span>{isRTL ? 'تفاصيل' : 'Details'}</span>
               </button>
             </div>
 
             {/* Slider Dots Indicator */}
-            <div className="flex items-center justify-center gap-1.5 mt-4">
+            <div className="flex items-center justify-center gap-1.5 mt-5">
               {featuredItems.map((_, i) => (
                 <button
                   key={i}
@@ -735,8 +814,8 @@ export const HomePage: React.FC = () => {
                   onClick={() => setActiveHeroIdx(i)}
                   className={`transition-all duration-300 rounded-full cursor-pointer ${
                     activeHeroIdx % featuredItems.length === i
-                      ? 'w-4 h-1 bg-[#E50914]'
-                      : 'w-1.5 h-1 bg-white/30 hover:bg-white/50'
+                      ? 'w-6 h-1.5 bg-[#E50914]'
+                      : 'w-2 h-1.5 bg-white/30 hover:bg-white/50'
                   }`}
                   aria-label={`Slide ${i + 1}`}
                 />
@@ -805,7 +884,127 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* 4. Continue Watching (Fixed edge-to-edge scroll) */}
+        {/* Rail 1: Trending Global Movies */}
+        {isLoading ? (
+          <ShimmerRail aspect="2/3" />
+        ) : movies.length > 0 ? (
+          <ContentRail
+            title={isRTL ? 'أفلام رائجة عالمياً' : 'Trending Global Movies'}
+            subtitle={isRTL ? 'جودة 1080p مع ترجمة عربية' : 'Huge library in 1080p quality'}
+            actionText={isRTL ? 'عرض المزيد' : 'View All'}
+            onAction={() => setCurrentTab('movies')}
+          >
+            {movies.map((movie) => (
+              <MediaCard key={movie.tmdb_id} item={movie} onSelect={handleSelectMedia} />
+            ))}
+          </ContentRail>
+        ) : null}
+
+        {/* Rail 2: Latest Cinema Releases */}
+        {latestMovies.length > 0 && (
+          <ContentRail
+            title={isRTL ? 'أحدث إصدارات السينما' : 'Latest Cinema Releases'}
+            subtitle={isRTL ? 'إصدارات 2025-2026 الحصرية' : 'Brand new digital releases'}
+            actionText={isRTL ? 'عرض الكل' : 'View All'}
+            onAction={() => setCurrentTab('movies')}
+          >
+            {latestMovies.map((movie) => (
+              <MediaCard key={movie.tmdb_id} item={movie} onSelect={handleSelectMedia} />
+            ))}
+          </ContentRail>
+        )}
+
+        {/* Rail 3: Localized Country Rail (Tunisia, Algeria, Egypt, Morocco, etc. - in 3rd position directly after Trending Global and Latest Cinema) */}
+        {localizedData && localizedData.items && localizedData.items.length > 0 && (
+          <div className="relative mb-2">
+            <ContentRail
+              title={isRTL ? localizedData.info.railTitleAr : localizedData.info.railTitleEn}
+              subtitle={isRTL ? localizedData.info.railSubtitleAr : localizedData.info.railSubtitleEn}
+              badge={
+                <span className="text-xs bg-[#E50914]/20 border border-[#E50914]/40 text-[#E50914] px-2 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
+                  <MapPin className="w-3 h-3 text-[#E50914]" />
+                  {localizedData.info.flag} {isRTL ? localizedData.info.nameAr : localizedData.info.nameEn}
+                </span>
+              }
+              actionText={isRTL ? 'تغيير البلد' : 'Change Country'}
+              onAction={() => setShowCountryPicker((prev) => !prev)}
+            >
+              {localizedData.items.map((item) => (
+                <MediaCard key={item.tmdb_id} item={item} onSelect={handleSelectMedia} />
+              ))}
+            </ContentRail>
+
+            {/* Quick Country Switcher Pill Selector if toggled */}
+            {showCountryPicker && (
+              <div className="flex items-center gap-2 px-4 md:px-8 pb-3 overflow-x-auto no-scrollbar animate-in fade-in duration-200">
+                {availableCountries.map((c) => (
+                  <button
+                    key={c.code}
+                    type="button"
+                    onClick={() => {
+                      const res = geoService.setCountry(c.code);
+                      setLocalizedData(res);
+                      setShowCountryPicker(false);
+                    }}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                      localizedData.info.code === c.code
+                        ? 'bg-[#E50914] text-white border-[#E50914] shadow-lg shadow-red-900/40'
+                        : 'bg-[#1C1C1E] text-neutral-300 border-white/10 hover:border-white/30 hover:text-white'
+                    }`}
+                  >
+                    <span>{c.flag}</span>
+                    <span>{isRTL ? c.nameAr : c.nameEn}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Rail 4: Top 10 Ranked Rail (Outline numbers 1..10) */}
+        <div className="px-4 mb-6">
+          <h3 className="text-sm font-bold tracking-tight text-white mb-2.5">
+            {isRTL ? '⭐ أفضل 10 أفلام ومسلسلات' : '⭐ Top 10 Movies & Series'}
+          </h3>
+          <div className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory -mx-4 px-4 pt-1 pb-2">
+            {top10List.map((item, index) => {
+              const title = (item as any)?.title || (item as any)?.name || 'Title';
+              const poster = item?.poster_url || (item as any)?.backdrop_url;
+
+              return (
+                <div
+                  key={(item as any)?.tmdb_id || index}
+                  onClick={() => handleSelectMedia(item as any)}
+                  className="flex items-end shrink-0 snap-start cursor-pointer group select-none"
+                >
+                  {/* Outline Number */}
+                  <span className="top10-num z-0">{index + 1}</span>
+
+                  {/* Vertical Poster with Red TOP 10 Badge */}
+                  <div className="relative w-[86px] h-[120px] sm:w-[100px] sm:h-[140px] rounded-xl overflow-hidden border border-white/15 z-10 shadow-xl bg-[#1C1C1E] group-hover:scale-105 transition-transform duration-300">
+                    {poster ? (
+                      <img
+                        src={poster}
+                        alt={title}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-[#1C1C1E] flex items-center justify-center p-2 text-center text-[10px] text-white/50">
+                        {title}
+                      </div>
+                    )}
+                    <span className="absolute top-1.5 right-1.5 bg-[#E50914] text-[7px] font-black px-1.5 py-0.5 rounded shadow tracking-tight">
+                      TOP 10
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Rail 5: Continue Watching */}
         {continueWatchingList.length > 0 && (
           <div className="px-4 mb-6">
             <h3 className="text-sm font-bold tracking-tight text-white mb-2.5">
@@ -856,80 +1055,7 @@ export const HomePage: React.FC = () => {
           </div>
         )}
 
-        {/* 5. Top 10 Movies & Series (Fixed RTL alignment & smooth full-bleed carousel) */}
-        <div className="px-4 mb-6">
-          <h3 className="text-sm font-bold tracking-tight text-white mb-2.5">
-            {isRTL ? 'أفضل 10 أفلام ومسلسلات' : 'Top 10 Movies & Series'}
-          </h3>
-          <div className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory -mx-4 px-4 pt-1 pb-2">
-            {top10List.map((item, index) => {
-              const title = (item as any)?.title || (item as any)?.name || 'Title';
-              const poster = item?.poster_url || (item as any)?.backdrop_url;
-
-              return (
-                <div
-                  key={(item as any)?.tmdb_id || index}
-                  onClick={() => handleSelectMedia(item as any)}
-                  className="flex items-end shrink-0 snap-start cursor-pointer group select-none"
-                >
-                  {/* Outline Number */}
-                  <span className="top10-num z-0">{index + 1}</span>
-
-                  {/* Vertical Poster with Red TOP 10 Badge */}
-                  <div className="relative w-[86px] h-[120px] sm:w-[100px] sm:h-[140px] rounded-xl overflow-hidden border border-white/15 z-10 shadow-xl bg-[#1C1C1E] group-hover:scale-105 transition-transform duration-300">
-                    {poster ? (
-                      <img
-                        src={poster}
-                        alt={title}
-                        loading="lazy"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-[#1C1C1E] flex items-center justify-center p-2 text-center text-[10px] text-white/50">
-                        {title}
-                      </div>
-                    )}
-                    <span className="absolute top-1.5 right-1.5 bg-[#E50914] text-[7px] font-black px-1.5 py-0.5 rounded shadow tracking-tight">
-                      TOP 10
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 6. Trending Global Movies Rail */}
-        {isLoading ? (
-          <ShimmerRail aspect="2/3" />
-        ) : movies.length > 0 ? (
-          <ContentRail
-            title={isRTL ? 'أفلام رائجة عالمياً' : 'Trending Global Movies'}
-            subtitle={isRTL ? 'جودة 1080p مع ترجمة عربية' : 'Huge library in 1080p quality'}
-            actionText={isRTL ? 'عرض المزيد' : 'View All'}
-            onAction={() => setCurrentTab('movies')}
-          >
-            {movies.map((movie) => (
-              <MediaCard key={movie.tmdb_id} item={movie} onSelect={handleSelectMedia} />
-            ))}
-          </ContentRail>
-        ) : null}
-
-        {/* 7. Latest Cinema Releases */}
-        {latestMovies.length > 0 && (
-          <ContentRail
-            title={isRTL ? 'أحدث إصدارات السينما' : 'Latest Cinema Releases'}
-            subtitle={isRTL ? 'إصدارات 2025-2026 الحصرية' : 'Brand new digital releases'}
-            actionText={isRTL ? 'عرض الكل' : 'View All'}
-            onAction={() => setCurrentTab('movies')}
-          >
-            {latestMovies.map((movie) => (
-              <MediaCard key={movie.tmdb_id} item={movie} onSelect={handleSelectMedia} />
-            ))}
-          </ContentRail>
-        )}
-
-        {/* 8. Featured TV Series */}
+        {/* Rail 6: Featured TV Series */}
         {tvShows.length > 0 && (
           <ContentRail
             title={isRTL ? 'مسلسلات مميزة' : 'Featured TV Series'}
@@ -943,7 +1069,7 @@ export const HomePage: React.FC = () => {
           </ContentRail>
         )}
 
-        {/* 9. Action Blockbusters */}
+        {/* Rail 7: Action Blockbusters */}
         {actionMovies.length > 0 && (
           <ContentRail
             title={isRTL ? 'أفلام حركة وإثارة' : 'Action Blockbusters'}
@@ -957,7 +1083,88 @@ export const HomePage: React.FC = () => {
           </ContentRail>
         )}
 
-        {/* 10. Popular TV Channels */}
+        {/* Rail 8: Browse by Genre (Vibrant visual cards like nxsha.space) */}
+        <div className="px-4 md:px-8 my-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-1 h-4 rounded-full bg-[#E50914]" />
+              <div>
+                <h2 className="text-[18px] sm:text-[20px] font-semibold tracking-tight text-[#F8FAFC]">
+                  {isRTL ? '🎭 تصفح حسب التصنيف' : '🎭 Browse by Genre'}
+                </h2>
+                <p className="text-xs text-[#94A3B8] font-normal mt-0.5">
+                  {isRTL ? 'استكشف آلاف الأفلام والمسلسلات حسب نوعك المفضل' : 'Explore thousands of titles by your favorite themes'}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCurrentTab('movies')}
+              className="text-[13px] font-normal text-[#94A3B8] hover:text-[#F8FAFC] transition-colors cursor-pointer"
+            >
+              {isRTL ? 'جميع التصنيفات' : 'All Genres'}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            {GENRE_TILES.map((g) => (
+              <div
+                key={g.id}
+                onClick={() => setCurrentTab('movies')}
+                className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${g.gradient} p-4 flex flex-col justify-between h-24 border border-white/10 hover:border-white/30 shadow-lg cursor-pointer transform hover:-translate-y-1 transition-all duration-300 active:scale-95`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl drop-shadow">{g.icon}</span>
+                  <div className="w-6 h-6 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ChevronRight className="w-3.5 h-3.5 text-white" />
+                  </div>
+                </div>
+                <span className="font-bold text-sm text-white drop-shadow truncate">
+                  {isRTL ? g.nameAr : g.nameEn}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Rail 9: Browse by Language (Visual pills like nxsha.space) */}
+        <div className="px-4 md:px-8 my-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-1 h-4 rounded-full bg-[#E50914]" />
+              <div>
+                <h2 className="text-[18px] sm:text-[20px] font-semibold tracking-tight text-[#F8FAFC]">
+                  {isRTL ? '🌐 تصفح حسب لغة العرض' : '🌐 Browse by Language'}
+                </h2>
+                <p className="text-xs text-[#94A3B8] font-normal mt-0.5">
+                  {isRTL ? 'أعمال ناطقة ومدبلجة ومترجمة بأعلى دقة' : 'Original audio & translated international cinema'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+            {LANGUAGE_TILES.map((l) => (
+              <div
+                key={l.code}
+                onClick={() => setCurrentTab('movies')}
+                className="flex items-center gap-3 bg-[#1C1C1E] hover:bg-[#252528] border border-white/10 hover:border-[#E50914] px-4 py-3 rounded-2xl cursor-pointer transition-all active:scale-95 shrink-0 shadow-md group"
+              >
+                <span className="text-xl">{l.flag}</span>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-white group-hover:text-[#E50914] transition-colors">
+                    {isRTL ? l.nameAr : l.nameEn}
+                  </span>
+                  <span className="text-[10px] text-neutral-400 uppercase tracking-wider font-semibold">
+                    {l.badge}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Rail 10: Popular TV Channels */}
         {channels.length > 0 && (
           <ContentRail
             title={isRTL ? 'قنوات تلفزيونية مميزة' : 'Popular TV Channels'}
