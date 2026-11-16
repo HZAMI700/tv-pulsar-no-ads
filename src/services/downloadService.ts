@@ -460,15 +460,22 @@ class DownloadService {
       ? `${safeBase}_S${sNum}E${eNum}.mp4`
       : `${safeBase}.mp4`;
 
-    // Prioritize HTTPS resolver if web app is served over HTTPS to avoid mixed-content blocking
-    const endpoints = isHttps
+    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+    // Prioritize appropriate resolver depending on environment (local vs production HTTPS/HTTP)
+    const endpoints = isLocal
+      ? [
+          'http://localhost:61151/api/moviebox/resolve',
+          'https://pulsar-moviebox-api.onrender.com/api/moviebox/resolve',
+        ]
+      : isHttps
       ? [
           'https://pulsar-moviebox-api.onrender.com/api/moviebox/resolve',
           'http://node19.botkeep.cloud:61151/api/moviebox/resolve',
         ]
       : [
-          'http://node19.botkeep.cloud:61151/api/moviebox/resolve',
           'https://pulsar-moviebox-api.onrender.com/api/moviebox/resolve',
+          'http://node19.botkeep.cloud:61151/api/moviebox/resolve',
         ];
 
     for (const endpoint of endpoints) {
