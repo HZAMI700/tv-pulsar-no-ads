@@ -144,6 +144,7 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
   const [selectedQuality, setSelectedQuality] = useState<VideoQuality>('1080p');
   const [showQualityModal, setShowQualityModal] = useState(false);
   const [selectedEpisodeForModal, setSelectedEpisodeForModal] = useState<TmdbEpisode | null>(null);
+  const [resolvingEpisodeNum, setResolvingEpisodeNum] = useState<number | null>(null);
   const [webDownloadToast, setWebDownloadToast] = useState<string | null>(null);
 
   // Resume tracking
@@ -179,6 +180,12 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
   };
 
   const handleToggleDownloadEpisode = (ep: TmdbEpisode) => {
+    if (!downloadService.isSupported()) {
+      setSelectedEpisodeForModal(ep);
+      setShowQualityModal(true);
+      return;
+    }
+
     const epTask = Object.values(tasks).find(
       (t) => t.mediaId === mediaId && t.season === selectedSeason && t.episode === ep.episodeNumber
     );
@@ -204,27 +211,44 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
     subtitleUrls?: Record<string, string>
   ) => {
     setSelectedQuality(quality);
+    setShowQualityModal(false);
+
     for (const epNum of episodeNumbers) {
       const ep = episodes.find((e) => e.episodeNumber === epNum) || selectedEpisodeForModal;
       if (!ep) continue;
 
       if (!downloadService.isSupported()) {
-        const resolved = resolveVideoSource({
-          type: 'tv',
-          mediaId: `tv-${series.tmdb_id}-s${selectedSeason}e${ep.episodeNumber}`,
-          tmdbId: series.tmdb_id,
-          title: `${displayTitle} S${selectedSeason}E${ep.episodeNumber}`,
-          season: selectedSeason,
-          episode: ep.episodeNumber,
-          quality,
-        });
-        const safeTitle = `${displayTitle}_S${selectedSeason}E${ep.episodeNumber}_${quality}`.replace(/[^a-zA-Z0-9_\u0600-\u06FF]/g, '_');
-        downloadService.directDownloadToDevice(resolved.url, `${safeTitle}.mp4`);
-        const msg = isRTL
-          ? `جاري تحميل الحلقة ${ep.episodeNumber} مباشرة إلى ملفات جهازك...`
-          : `Downloading Episode ${ep.episodeNumber} directly to your device files...`;
-        setWebDownloadToast(msg);
-        setTimeout(() => setWebDownloadToast(null), 4500);
+        setResolvingEpisodeNum(epNum);
+        const startingMsg = isRTL
+          ? `جاري تجهيز واستخراج ملف الحلقة ${epNum} للتحميل المباشر (${quality})...`
+          : `Preparing direct video download for Episode ${epNum} (${quality})...`;
+        setWebDownloadToast(startingMsg);
+
+        try {
+          const resolved = await downloadService.resolveDirectDownloadUrl({
+            title: displayTitle || series.title,
+            type: 'episode',
+            season: selectedSeason,
+            episode: epNum,
+            quality,
+            tmdbId: series.tmdb_id,
+          });
+
+          downloadService.directDownloadToDevice(resolved.downloadUrl, resolved.fileName);
+          const successMsg = isRTL
+            ? `بدأ تحميل الحلقة ${epNum} مباشرة إلى جهازك (${resolved.fileName})`
+            : `Started downloading Episode ${epNum} (${resolved.fileName}) to your device...`;
+          setWebDownloadToast(successMsg);
+        } catch (err) {
+          console.error('Failed to resolve episode download URL', err);
+          const errMsg = isRTL
+            ? `تعذر استخراج رابط تحميل الحلقة ${epNum}، يرجى المحاولة لاحقاً.`
+            : `Failed to resolve Episode ${epNum} download link.`;
+          setWebDownloadToast(errMsg);
+        } finally {
+          setResolvingEpisodeNum(null);
+          setTimeout(() => setWebDownloadToast(null), 5000);
+        }
       } else {
         await startEpisodeDownload(
           series,
@@ -485,12 +509,15 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="button"
+                          disabled={resolvingEpisodeNum === ep.episodeNumber}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleToggleDownloadEpisode(ep);
                           }}
                           className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
-                            epTask?.status === 'COMPLETED'
+                            resolvingEpisodeNum === ep.episodeNumber
+                              ? 'bg-[#E50914]/20 border-[#E50914]/40 text-[#E50914]'
+                              : epTask?.status === 'COMPLETED'
                               ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
                               : epTask?.status === 'DOWNLOADING'
                               ? 'bg-[#E50914]/20 border-[#E50914]/40 text-[#E50914]'
@@ -499,7 +526,9 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
                               : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
                           }`}
                         >
-                          {epTask?.status === 'COMPLETED' ? (
+                          {resolvingEpisodeNum === ep.episodeNumber ? (
+                            <div className="w-4 h-4 border-2 border-[#E50914] border-t-transparent rounded-full animate-spin" />
+                          ) : epTask?.status === 'COMPLETED' ? (
                             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                           ) : epTask?.status === 'DOWNLOADING' ? (
                             <Pause className="w-3.5 h-3.5 animate-pulse" />

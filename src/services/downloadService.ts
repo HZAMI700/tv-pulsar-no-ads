@@ -3,6 +3,23 @@ import { resolveVideoSource } from './videoSourceResolver';
 
 export type DownloadListener = (task: DownloadTask) => void;
 
+export interface DirectDownloadParams {
+  title: string;
+  type: 'movie' | 'episode';
+  season?: number;
+  episode?: number;
+  quality?: string;
+  tmdbId?: string;
+}
+
+export interface DirectDownloadResult {
+  success: boolean;
+  downloadUrl: string;
+  fileName: string;
+  sizeBytes?: number;
+  quality?: string;
+}
+
 interface NativePulsarDownloader {
   startDownload(url: String, headersJson: String, fileName: String, mediaId: String, mediaType: String): string;
   startMediaDownload(
@@ -427,22 +444,145 @@ class DownloadService {
     return { success: true, path: 'Movies/PulsarApp' };
   }
 
+  public async resolveDirectDownloadUrl(params: DirectDownloadParams): Promise<DirectDownloadResult> {
+    const quality = params.quality || '1080p';
+    const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+    const cleanTitle = (params.title || 'video')
+      .replace(/[^\w\s\u0600-\u06FF.-]/g, '')
+      .replace(/•.*$/g, '')
+      .trim();
+
+    const sNum = (params.season || 1).toString().padStart(2, '0');
+    const eNum = (params.episode || 1).toString().padStart(2, '0');
+    const safeBase = cleanTitle.replace(/\s+/g, '_') || 'video';
+    const defaultFileName = params.type === 'episode'
+      ? `${safeBase}_S${sNum}E${eNum}.mp4`
+      : `${safeBase}.mp4`;
+
+    // Prioritize HTTPS resolver if web app is served over HTTPS to avoid mixed-content blocking
+    const endpoints = isHttps
+      ? [
+          'https://pulsar-moviebox-api.onrender.com/api/moviebox/resolve',
+          'http://node19.botkeep.cloud:61151/api/moviebox/resolve',
+        ]
+      : [
+          'http://node19.botkeep.cloud:61151/api/moviebox/resolve',
+          'https://pulsar-moviebox-api.onrender.com/api/moviebox/resolve',
+        ];
+
+    for (const endpoint of endpoints) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            title: cleanTitle,
+            query: cleanTitle,
+            type: params.type,
+            season: params.season || 1,
+            episode: params.episode || 1,
+            quality,
+          }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success) {
+            const rawFileName = data.fileName || defaultFileName;
+            let targetUrl = data.proxyUrl || data.url;
+
+            // If browser is on HTTPS and target is HTTP, route through HTTPS proxy to prevent blocked downloads
+            if (isHttps && targetUrl && targetUrl.startsWith('http://node19.botkeep.cloud')) {
+              targetUrl = `https://pulsar-moviebox-api.onrender.com/api/moviebox/proxy?url=${encodeURIComponent(data.url)}`;
+            }
+
+            if (targetUrl) {
+              const sep = targetUrl.includes('?') ? '&' : '?';
+              const downloadUrl = `${targetUrl}${sep}download=1&filename=${encodeURIComponent(rawFileName)}`;
+              return {
+                success: true,
+                downloadUrl,
+                fileName: rawFileName,
+                sizeBytes: data.sizeBytes,
+                quality: data.quality || quality,
+              };
+            }
+          }
+        }
+      } catch (err) {
+        console.warn(`[DownloadService] Endpoint ${endpoint} failed:`, err);
+      }
+    }
+
+    // Direct proxy fallback with guaranteed attachment disposition
+    const fallbackHost = isHttps
+      ? 'https://pulsar-moviebox-api.onrender.com'
+      : 'http://node19.botkeep.cloud:61151';
+
+    const fallbackUrl = `${fallbackHost}/api/moviebox/proxy?url=${encodeURIComponent(
+      `https://streamfree.top/api/stream?query=${encodeURIComponent(cleanTitle)}`
+    )}&download=1&filename=${encodeURIComponent(defaultFileName)}`;
+
+    return {
+      success: true,
+      downloadUrl: fallbackUrl,
+      fileName: defaultFileName,
+      quality,
+    };
+  }
+
   public directDownloadToDevice(url: string, filename?: string) {
     if (!url) return;
     try {
-      const a = document.createElement('a');
-      a.href = url;
+      let finalUrl = url;
       if (filename) {
-        a.download = filename;
+        const cleanName = filename.replace(/[^\w\u0600-\u06FF.-]/g, '_');
+        if (!finalUrl.includes('filename=')) {
+          const sep = finalUrl.includes('?') ? '&' : '?';
+          finalUrl = `${finalUrl}${sep}download=1&filename=${encodeURIComponent(cleanName)}`;
+        }
       }
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
+
+      // Method 1: Hidden download iframe (strictly delegates to browser native download manager without playing media)
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.style.position = 'absolute';
+      iframe.style.width = '0px';
+      iframe.style.height = '0px';
+      iframe.src = finalUrl;
+      document.body.appendChild(iframe);
+      setTimeout(() => {
+        try {
+          if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+        } catch (_) {}
+      }, 45000);
+
+      // Method 2: Anchor download without target="_blank" (target="_blank" triggers in-browser video playback in a new tab)
+      const a = document.createElement('a');
+      a.href = finalUrl;
+      if (filename) {
+        a.setAttribute('download', filename);
+      }
+      a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
+      setTimeout(() => {
+        try {
+          if (a.parentNode) a.parentNode.removeChild(a);
+        } catch (_) {}
+      }, 5000);
     } catch (e) {
-      console.warn('[DownloadService] Failed direct download trigger, opening new tab', e);
-      window.open(url, '_blank');
+      console.warn('[DownloadService] Failed direct download trigger', e);
+      window.location.assign(url);
     }
   }
 

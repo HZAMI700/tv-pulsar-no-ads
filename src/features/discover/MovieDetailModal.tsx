@@ -116,6 +116,7 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({ movie, onClo
   const [selectedQuality, setSelectedQuality] = useState<VideoQuality>('1080p');
   const [showQualityModal, setShowQualityModal] = useState(false);
   const [storageWarning, setStorageWarning] = useState(false);
+  const [isResolvingDownload, setIsResolvingDownload] = useState(false);
   const [webDownloadToast, setWebDownloadToast] = useState<string | null>(null);
 
   const handleStartPlayback = () => {
@@ -143,6 +144,11 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({ movie, onClo
   };
 
   const handleDownloadClick = async () => {
+    if (!downloadService.isSupported()) {
+      setShowQualityModal(true);
+      return;
+    }
+
     if (freeStorageBytes < 300 * 1024 * 1024) {
       setStorageWarning(true);
       setTimeout(() => setStorageWarning(false), 4000);
@@ -175,21 +181,36 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({ movie, onClo
     };
 
     if (!downloadService.isSupported()) {
-      const resolved = resolveVideoSource({
-        type: 'movie',
-        mediaId: `movie-${movie.tmdb_id}`,
-        tmdbId: movie.tmdb_id,
-        title: moviePayload.title,
-        quality,
-      });
-      const safeTitle = (moviePayload.title || 'Movie').replace(/[^a-zA-Z0-9_\u0600-\u06FF]/g, '_');
-      downloadService.directDownloadToDevice(resolved.url, `${safeTitle}_${quality}.mp4`);
       setShowQualityModal(false);
-      const msg = isRTL
-        ? `جاري تحميل "${moviePayload.title}" مباشرة إلى ملفات جهازك...`
-        : `Downloading "${moviePayload.title}" directly to your device files...`;
-      setWebDownloadToast(msg);
-      setTimeout(() => setWebDownloadToast(null), 4500);
+      setIsResolvingDownload(true);
+      const startingMsg = isRTL
+        ? `جاري تجهيز واستخراج ملف الفيلم للتحميل المباشر (${quality})...`
+        : `Preparing direct video download file (${quality})...`;
+      setWebDownloadToast(startingMsg);
+
+      try {
+        const resolved = await downloadService.resolveDirectDownloadUrl({
+          title: moviePayload.title,
+          type: 'movie',
+          quality,
+          tmdbId: movie.tmdb_id,
+        });
+
+        downloadService.directDownloadToDevice(resolved.downloadUrl, resolved.fileName);
+        const successMsg = isRTL
+          ? `بدأ تحميل "${moviePayload.title}" مباشرة إلى جهازك (${resolved.fileName})`
+          : `Started downloading "${moviePayload.title}" (${resolved.fileName}) to your device...`;
+        setWebDownloadToast(successMsg);
+      } catch (err) {
+        console.error('Failed to resolve download URL', err);
+        const errMsg = isRTL
+          ? `تعذر استخراج رابط التحميل، يرجى المحاولة لاحقاً.`
+          : `Could not resolve download link. Please try again.`;
+        setWebDownloadToast(errMsg);
+      } finally {
+        setIsResolvingDownload(false);
+        setTimeout(() => setWebDownloadToast(null), 5000);
+      }
       return;
     }
 
@@ -314,7 +335,12 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({ movie, onClo
                   : 'bg-[#1C1C1E] text-white hover:bg-[#262629] border-white/10'
               }`}
             >
-              {downloadTask?.status === 'COMPLETED' ? (
+              {isResolvingDownload ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-[#E50914] border-t-transparent rounded-full animate-spin" />
+                  <span>{isRTL ? 'جاري تجهيز ملف التحميل...' : 'Preparing Download...'}</span>
+                </>
+              ) : downloadTask?.status === 'COMPLETED' ? (
                 <>
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   <span>{isRTL ? 'تم التحميل • مشاهدة دون إنترنت' : 'Downloaded • Play Offline'}</span>
