@@ -27,6 +27,57 @@
 
   <!-- Cairo & Inter Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Pulsar Infallible Pop-Under & Ad Shield (Movies, Series, Channels & Live Sports) -->
+  <script>
+    (function() {
+      'use strict';
+      try {
+        // 1. Strict window.open override - completely blocks ad popups & popunders
+        var _realOpen = window.open;
+        window.open = function(url, target, features) {
+          if (!url) return null;
+          var str = String(url).toLowerCase();
+          // Allow legitimate user intents: Telegram channel, blob downloads, or current origin
+          if (str.indexOf('t.me/') !== -1 || str.indexOf('telegram.org') !== -1 || str.indexOf('blob:') === 0 || str.indexOf(window.location.hostname) !== -1) {
+            return _realOpen.call(window, url, target, features);
+          }
+          console.warn('[Pulsar Shield] Suppressed unauthorized popup/pop-under to:', url);
+          return null;
+        };
+        window.showModalDialog = function() { return null; };
+
+        // 2. Disarm known ad taggers & trackers
+        window.aclib = { runAutoTag: function(){}, runPop: function(){} };
+        window._Hasync = { push: function(){ return 0; } };
+
+        // 3. Intercept click-hijacking ad popunders at document capture phase
+        window.addEventListener('click', function(e) {
+          var el = e.target;
+          while (el && el !== document.body && el !== document.documentElement) {
+            if (el.tagName === 'A' && el.target === '_blank') {
+              var href = String(el.href || '').toLowerCase();
+              if (href && href.indexOf('t.me/') === -1 && href.indexOf('telegram') === -1 && href.indexOf(window.location.hostname) === -1 && href.indexOf('blob:') !== 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.warn('[Pulsar Shield] Prevented ad click-hijack:', href);
+                return false;
+              }
+            }
+            el = el.parentElement;
+          }
+        }, true);
+
+        // 4. Neutralize popunder focus/blur traps
+        var _blur = window.blur;
+        window.blur = function() {
+          // No-op to prevent popunders from sending parent window to background
+        };
+      } catch (e) {
+        console.warn('[Pulsar Shield] Init notice:', e);
+      }
+    })();
+  </script>
 </head>
 <body class="bg-[#07080D] text-white selection:bg-[#FF1838] selection:text-white">
   <div id="root"></div>

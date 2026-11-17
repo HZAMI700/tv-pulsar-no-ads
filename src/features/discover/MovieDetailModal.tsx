@@ -196,16 +196,23 @@ export const MovieDetailModal: React.FC<MovieDetailModalProps> = ({ movie, onClo
           tmdbId: movie.tmdb_id,
         });
 
-        downloadService.directDownloadToDevice(resolved.downloadUrl, resolved.fileName);
-        const successMsg = isRTL
-          ? `بدأ تحميل "${moviePayload.title}" مباشرة إلى جهازك (${resolved.fileName})`
-          : `Started downloading "${moviePayload.title}" (${resolved.fileName}) to your device...`;
-        setWebDownloadToast(successMsg);
+        if (resolved && resolved.success && resolved.downloadUrl) {
+          downloadService.directDownloadToDevice(resolved.downloadUrl, resolved.fileName);
+          const successMsg = isRTL
+            ? `بدأ تحميل "${moviePayload.title}" مباشرة إلى جهازك (${resolved.fileName})`
+            : `Started downloading "${moviePayload.title}" (${resolved.fileName}) to your device...`;
+          setWebDownloadToast(successMsg);
+        } else {
+          const failMsg = isRTL
+            ? `عذراً، هذا الفيلم متاح للمشاهدة المباشرة حالياً، يرجى المشاهدة عبر المشغل.`
+            : `Direct download is temporarily unavailable for this title. Please stream it in the player.`;
+          setWebDownloadToast(failMsg);
+        }
       } catch (err) {
         console.error('Failed to resolve download URL', err);
         const errMsg = isRTL
-          ? `تعذر استخراج رابط التحميل، يرجى المحاولة لاحقاً.`
-          : `Could not resolve download link. Please try again.`;
+          ? `عذراً، تعذر استخراج رابط التحميل، يرجى المشاهدة مباشرة عبر المشغل.`
+          : `Could not resolve download link. Please stream it in the player.`;
         setWebDownloadToast(errMsg);
       } finally {
         setIsResolvingDownload(false);

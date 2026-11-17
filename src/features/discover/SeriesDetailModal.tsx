@@ -234,16 +234,23 @@ export const SeriesDetailModal: React.FC<SeriesDetailModalProps> = ({
             tmdbId: series.tmdb_id,
           });
 
-          downloadService.directDownloadToDevice(resolved.downloadUrl, resolved.fileName);
-          const successMsg = isRTL
-            ? `بدأ تحميل الحلقة ${epNum} مباشرة إلى جهازك (${resolved.fileName})`
-            : `Started downloading Episode ${epNum} (${resolved.fileName}) to your device...`;
-          setWebDownloadToast(successMsg);
+          if (resolved && resolved.success && resolved.downloadUrl) {
+            downloadService.directDownloadToDevice(resolved.downloadUrl, resolved.fileName);
+            const successMsg = isRTL
+              ? `بدأ تحميل الحلقة ${epNum} مباشرة إلى جهازك (${resolved.fileName})`
+              : `Started downloading Episode ${epNum} (${resolved.fileName}) to your device...`;
+            setWebDownloadToast(successMsg);
+          } else {
+            const failMsg = isRTL
+              ? `عذراً، الحلقة ${epNum} متاحة للمشاهدة المباشرة حالياً عبر المشغل.`
+              : `Direct download is temporarily unavailable for Episode ${epNum}. Please stream it in the player.`;
+            setWebDownloadToast(failMsg);
+          }
         } catch (err) {
           console.error('Failed to resolve episode download URL', err);
           const errMsg = isRTL
-            ? `تعذر استخراج رابط تحميل الحلقة ${epNum}، يرجى المحاولة لاحقاً.`
-            : `Failed to resolve Episode ${epNum} download link.`;
+            ? `عذراً، تعذر استخراج رابط تحميل الحلقة ${epNum}، يرجى المشاهدة مباشرة عبر المشغل.`
+            : `Failed to resolve Episode ${epNum} download link. Please stream it in the player.`;
           setWebDownloadToast(errMsg);
         } finally {
           setResolvingEpisodeNum(null);

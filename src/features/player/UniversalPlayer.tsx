@@ -1271,6 +1271,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                 ? 'scale-x-[1.08] scale-y-[1.04]'
                 : 'scale-100 object-contain'
             }`}
+            sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
             allow="fullscreen *; picture-in-picture *; autoplay *; encrypted-media *; accelerometer; gyroscope; clipboard-write"
             allowFullScreen
             onError={() => {

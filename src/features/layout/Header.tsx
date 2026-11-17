@@ -40,9 +40,9 @@ export const Header: React.FC = () => {
           </span>
         </div>
 
-        {/* Center / Navigation Row */}
-        <nav aria-label="Primary" className="order-3 w-full min-w-0 md:order-none md:w-auto md:flex-1 md:ml-6">
-          <ul className="flex items-center gap-5 overflow-x-auto no-scrollbar md:gap-7">
+        {/* Center / Navigation Row (Desktop only - Mobile uses BottomNav) */}
+        <nav aria-label="Primary" className="hidden md:flex items-center min-w-0 md:w-auto md:flex-1 md:ml-8">
+          <ul className="flex items-center gap-7">
             {navItems.map((item) => {
               const active =
                 currentTab === item.tab ||
@@ -53,7 +53,7 @@ export const Header: React.FC = () => {
                 <li key={item.tab} className="shrink-0">
                   <button
                     onClick={() => setCurrentTab(item.tab)}
-                    className={`block py-1 text-sm md:text-[15px] font-semibold transition-all cursor-pointer relative ${
+                    className={`block py-1 text-[15px] font-semibold transition-all cursor-pointer relative ${
                       active
                         ? 'text-white after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-[#E50914]'
                         : 'text-neutral-400 hover:text-white'
@@ -67,22 +67,22 @@ export const Header: React.FC = () => {
           </ul>
         </nav>
 
-        {/* Right Actions: Visible on mobile only */}
-        <div className="flex md:hidden items-center gap-2">
+        {/* Right Actions: Language Toggle & Search on Mobile / Language on Desktop */}
+        <div className="flex items-center gap-2">
           {/* Language Toggle */}
           <button
             onClick={toggleLanguage}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#1C1C1E] border border-white/10 text-white/90 hover:text-white text-xs font-semibold cursor-pointer active:scale-95 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#18181A] border border-white/10 text-white/90 hover:text-white text-xs font-semibold cursor-pointer active:scale-95 transition-all shadow-sm"
             title={language === 'ar' ? 'Switch to English' : 'التحويل إلى العربية'}
           >
             <Globe className="w-3.5 h-3.5 text-[#E50914]" />
-            <span>{language === 'ar' ? 'EN' : 'عربي'}</span>
+            <span>{language === 'ar' ? 'English' : 'عربي'}</span>
           </button>
 
-          {/* Search Icon */}
+          {/* Search Icon (Mobile) */}
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="flex md:hidden p-2 rounded-full text-white/70 hover:text-white bg-[#18181A] border border-white/10 active:scale-95 transition-all cursor-pointer"
             aria-label="Search"
             title={t('search', language)}
           >

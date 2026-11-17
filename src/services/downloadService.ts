@@ -537,18 +537,10 @@ class DownloadService {
       }
     }
 
-    // Direct proxy fallback with guaranteed attachment disposition
-    const fallbackHost = isHttps
-      ? 'https://pulsar-moviebox-api.onrender.com'
-      : 'http://node19.botkeep.cloud:61151';
-
-    const fallbackUrl = `${fallbackHost}/api/moviebox/proxy?url=${encodeURIComponent(
-      `https://streamfree.top/api/stream?query=${encodeURIComponent(cleanTitle)}`
-    )}&download=1&filename=${encodeURIComponent(defaultFileName)}`;
-
+    // If all endpoints failed to resolve a direct video file, report clean failure instead of redirecting user to external Render API
     return {
-      success: true,
-      downloadUrl: fallbackUrl,
+      success: false,
+      downloadUrl: '',
       fileName: defaultFileName,
       quality,
     };
@@ -566,23 +558,7 @@ class DownloadService {
         }
       }
 
-      // Method 1: Hidden download iframe (strictly delegates to browser native download manager without disrupting the app UI)
-      let iframe = document.getElementById('pulsar-silent-downloader') as HTMLIFrameElement | null;
-      if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.id = 'pulsar-silent-downloader';
-        iframe.style.display = 'none';
-        iframe.style.position = 'fixed';
-        iframe.style.width = '0px';
-        iframe.style.height = '0px';
-        iframe.style.border = 'none';
-        iframe.style.opacity = '0';
-        iframe.style.pointerEvents = 'none';
-        document.body.appendChild(iframe);
-      }
-      iframe.src = finalUrl;
-
-      // Method 2: Anchor trigger fallback
+      // Clean HTML5 anchor download trigger - never navigates the window or exposes API URLs
       const a = document.createElement('a');
       a.href = finalUrl;
       if (filename) {
@@ -595,7 +571,7 @@ class DownloadService {
         try {
           if (a.parentNode) a.parentNode.removeChild(a);
         } catch (_) {}
-      }, 4000);
+      }, 3000);
     } catch (e) {
       console.warn('[DownloadService] Failed direct download trigger:', e);
     }
