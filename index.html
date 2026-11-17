@@ -28,12 +28,38 @@
   <!-- Cairo & Inter Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Pulsar Infallible Pop-Under & Ad Shield (Movies, Series, Channels & Live Sports) -->
+  <!-- Pulsar Infallible Pop-Under & Ad Shield (Parity with Native App Sandbox) -->
+  <style id="pulsar-ad-shield-css">
+    #ad_container, #ad_overlay, #fixedban, #ad_timer, #ad_close,
+    .ad_container, .ad_overlay, #mo-ads-close,
+    iframe[src*="ads"], iframe[src*="UK300"], iframe[src*="adblock"],
+    div[id*="fixedban"], div[id*="ad_"],
+    #onetrust-consent-sdk, #onetrust-banner-sdk, .onetrust-pc-dark-filter,
+    #CybotCookiebotDialog, #CybotCookiebotDialogBodyUnderlay,
+    #didomi-host, #didomi-popup, .didomi-popup-container,
+    .qc-cmp2-container, .qc-cmp-cleanslate,
+    .fc-consent-root, .fc-dialog-overlay,
+    #truste-consent-track, .truste_box_overlay, .truste_overlay,
+    #iubenda-cs-banner, .iubenda-cs-overlay,
+    .cc-window, .cc-banner, .cookie-banner, .cookie-modal,
+    #cookie-law-info-bar, [id^="sp_message_container"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        height: 0 !important;
+        width: 0 !important;
+        position: absolute !important;
+        top: -9999px !important;
+        left: -9999px !important;
+        z-index: -99999 !important;
+    }
+  </style>
   <script>
     (function() {
       'use strict';
       try {
-        // 1. Strict window.open override - completely blocks ad popups & popunders
+        // 1. Strict window.open override - blocks unauthorized popups & popunders
         var _realOpen = window.open;
         window.open = function(url, target, features) {
           if (!url) return null;
@@ -47,17 +73,29 @@
         };
         window.showModalDialog = function() { return null; };
 
-        // 2. Disarm known ad taggers & trackers
-        window.aclib = { runAutoTag: function(){}, runPop: function(){} };
-        window._Hasync = { push: function(){ return 0; } };
+        // 2. Disarm third-party ad taggers & telemetry (matching native app shield)
+        window.aclib = {
+          runAutoTag: function() { console.log('[Pulsar Shield] Suppressed aclib.runAutoTag'); },
+          runPop: function() { console.log('[Pulsar Shield] Suppressed aclib.runPop'); }
+        };
+        try { Object.freeze(window.aclib); } catch(e) {}
+        window._Hasync = { push: function() { return 0; } };
+        if (typeof window.displayTheWindow !== 'undefined') {
+          window.displayTheWindow = function() { return false; };
+        }
 
-        // 3. Intercept click-hijacking ad popunders at document capture phase
+        // 3. Suppress modal dialog traps
+        window.alert = function() { return true; };
+        window.confirm = function() { return true; };
+        window.prompt = function() { return null; };
+
+        // 4. Intercept click-hijacking ad popunders at document capture phase
         window.addEventListener('click', function(e) {
           var el = e.target;
           while (el && el !== document.body && el !== document.documentElement) {
-            if (el.tagName === 'A' && el.target === '_blank') {
+            if (el.tagName === 'A') {
               var href = String(el.href || '').toLowerCase();
-              if (href && href.indexOf('t.me/') === -1 && href.indexOf('telegram') === -1 && href.indexOf(window.location.hostname) === -1 && href.indexOf('blob:') !== 0) {
+              if (el.target === '_blank' && href && href.indexOf('t.me/') === -1 && href.indexOf('telegram') === -1 && href.indexOf(window.location.hostname) === -1 && href.indexOf('blob:') !== 0) {
                 e.preventDefault();
                 e.stopPropagation();
                 console.warn('[Pulsar Shield] Prevented ad click-hijack:', href);
@@ -68,11 +106,54 @@
           }
         }, true);
 
-        // 4. Neutralize popunder focus/blur traps
+        // 5. Neutralize popunder focus/blur traps and bring focus back to Pulsar
         var _blur = window.blur;
         window.blur = function() {
           // No-op to prevent popunders from sending parent window to background
         };
+        window.addEventListener('blur', function() {
+          setTimeout(function() {
+            try { window.focus(); } catch(e) {}
+          }, 30);
+        }, true);
+
+        // 6. Guard top-level navigation against ad iframe hijackers
+        window.addEventListener('beforeunload', function(e) {
+          if (window.__pulsarNavigating) return;
+          if (document.querySelector('iframe')) {
+            e.preventDefault();
+            e.returnValue = '';
+            return '';
+          }
+        });
+
+        // 7. Dynamic DOM Purge of ad overlays and click-catchers (from native app)
+        var purgeAdOverlays = function() {
+          try {
+            var adIds = [
+              'ad_container', 'ad_overlay', 'fixedban', 'ad_timer', 'ad_close',
+              'onetrust-consent-sdk', 'onetrust-banner-sdk', 'CybotCookiebotDialog',
+              'CybotCookiebotDialogBodyUnderlay', 'didomi-host', 'didomi-popup',
+              'truste-consent-track', 'iubenda-cs-banner', 'cookie-law-info-bar'
+            ];
+            for (var i = 0; i < adIds.length; i++) {
+              var el = document.getElementById(adIds[i]);
+              if (el && el.parentNode) {
+                el.parentNode.removeChild(el);
+              }
+            }
+            var adFrames = document.querySelectorAll('iframe[src*="ads"], iframe[src*="UK300"], iframe[src*="adblock"]');
+            for (var j = 0; j < adFrames.length; j++) {
+              var f = adFrames[j];
+              if (f && f.parentNode) {
+                f.parentNode.removeChild(f);
+              }
+            }
+          } catch(e) {}
+        };
+        purgeAdOverlays();
+        setInterval(purgeAdOverlays, 1000);
+
       } catch (e) {
         console.warn('[Pulsar Shield] Init notice:', e);
       }
