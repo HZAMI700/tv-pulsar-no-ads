@@ -54,8 +54,8 @@ if (!preg_match('/\.mp4$/i', $cleanName)) {
 $reqHeaders = [
     'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     'Referer: https://movieboxapp.in/',
-    'Origin: https://movieboxapp.in',
-    'Accept: */*'
+    'Accept: */*',
+    'Connection: keep-alive',
 ];
 
 if (isset($_SERVER['HTTP_RANGE'])) {
@@ -71,6 +71,8 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 curl_setopt($ch, CURLOPT_TIMEOUT, 3600);
 curl_setopt($ch, CURLOPT_BUFFERSIZE, 128 * 1024);
 curl_setopt($ch, CURLOPT_HTTPHEADER, $reqHeaders);
+curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+curl_setopt($ch, CURLOPT_ENCODING, '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'HEAD') {
     curl_setopt($ch, CURLOPT_NOBODY, true);
